@@ -22,7 +22,21 @@
 
 .social-links {
   display: flex;
-  gap: 15px;
+  align-items: center;
+  gap: 5px;
+}
+
+.social-links img {
+  max-height: 50px;
+  width: auto;
+}
+
+.X img{
+  height: 60px;
+}
+
+.Insta img{
+  height: 30px;
 }
 
 .social-icon {

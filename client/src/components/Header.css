@@ -23,6 +23,19 @@
   align-items: center;
   font-size: 24px;
 }
+
+.logo-icon {
+  display: flex;
+  align-items: center;
+  background-color: white;
+}
+
+.logo-icon img {
+  height: 50px;  /* Ajuste para o tamanho desejado */
+  width: auto;   /* Mantém a proporção */
+}
+
+
 .profile-section {
   display: none;
 }

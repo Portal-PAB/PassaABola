@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Header.css';
+import Logo from '../assets/logo.png';
 
-const LogoIcon = () => <div className="icon-placeholder logo-icon">⚽</div>;
 const ProfileIcon = () => <div className="icon-placeholder profile-icon">👤</div>;
 
 function Header() {
@@ -10,7 +10,7 @@ function Header() {
   return (
     <header className="header">
       <div className="header-container">
-        <LogoIcon />
+        <div className="icon-placeholder logo-icon"><img src={Logo} alt="Logo" /></div>
         
         <button 
           className="menu-hamburguer" 
