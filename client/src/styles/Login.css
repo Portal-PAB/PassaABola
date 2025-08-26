@@ -1,0 +1,111 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+  background-color: var(--branco);
+}
+
+.login-form {
+  background-color: var(--branco);
+  padding: 40px 50px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
+  border: solid 1px gray;
+}
+
+.login-form .form-title {
+  color: var(--roxo-principal);
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 40px;
+}
+
+.login-form .input-group-classic {
+  margin-bottom: 25px;
+}
+
+.login-form .input-group-classic label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.login-form .input-group-classic input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--cinza-borda);
+  border-radius: 25px;
+  box-sizing: border-box;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.login-form .input-group-classic input:focus {
+  border-color: var(--roxo-principal);
+  box-shadow: 0 0 0 3px rgba(66, 9, 134, 0.2);
+}
+
+.login-form .submit-button {
+  width: 100%;
+  padding: 15px;
+  background-color: var(--roxo-principal);
+  background-image: none;
+  color: var(--branco);
+  border: none;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.login-form .submit-button:hover {
+  background-color: var(--roxo-claro);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.forgot-password-link {
+  display: block;
+  text-align: right;
+  margin-top: -15px;
+  margin-bottom: 25px;
+  font-size: 0.9rem;
+  color: var(--cinza-texto);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.forgot-password-link:hover {
+  color: var(--roxo-principal);
+}
+
+.register-link {
+  text-align: center;
+  color: var(--cinza-texto);
+  font-size: 0.9rem;
+}
+
+.register-link a {
+  color: var(--roxo-principal);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.login-form .mensagem-feedback {
+  text-align: center;
+  margin-bottom: 15px;
+  font-weight: 500;
+  color: #D32F2F;
+}

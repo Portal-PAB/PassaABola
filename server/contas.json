@@ -1,0 +1,17 @@
+[
+  {
+    "nome": "Matheus Freitas Vieira",
+    "email": "matheus.vf06@gmail.com",
+    "senhaHash": "$2b$10$iNGtcO5ZhAbGz/JGlrS3vuZHai0HZUME2m22mh368Y6pg3zyKQfpO"
+  },
+  {
+    "nome": "Matheus",
+    "email": "teste@gmail.com",
+    "senhaHash": "$2b$10$4INOKfIy0dYyx2Qks2XOs.I.YNSGt/W0iMjJ6OKx50I.dGtiDFuEG"
+  },
+  {
+    "nome": "Teste4",
+    "email": "matheus@gmail.com",
+    "senhaHash": "$2b$10$7cEo4k43xhWChDgznv53FeMTS/Y/pCZJbjwJe/sR2/KQIVnzabeTe"
+  }
+]
