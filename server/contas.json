@@ -13,5 +13,10 @@
     "nome": "Teste4",
     "email": "matheus@gmail.com",
     "senhaHash": "$2b$10$7cEo4k43xhWChDgznv53FeMTS/Y/pCZJbjwJe/sR2/KQIVnzabeTe"
+  },
+  {
+    "nome": "Teste",
+    "email": "teste1@gmail.com",
+    "senhaHash": "$2b$10$7VyXZ1.mKljfiFVrnjK4j.HTrcCj/fAwjVNyXFheLB91Nx3N4HbdC"
   }
 ]

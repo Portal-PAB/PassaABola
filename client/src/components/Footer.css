@@ -5,7 +5,6 @@
 }
 
 .footer-container {
-  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -39,29 +38,25 @@
   height: 30px;
 }
 
-.social-icon {
-  width: 40px;
-  height: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: var(--branco);
-  text-decoration: none;
-  font-weight: 500;
-  transition: background-color 0.3s, border-color 0.3s;
-}
-
-.social-icon:hover {
-  background-color: var(--branco);
-  color: var(--roxo-principal);
-  border-color: var(--branco);
-}
-
-@media (min-width: 768px) {
+@media screen and (min-width: 768px) {
   .footer-container {
     flex-direction: row;
     justify-content: space-between;
   }
+}
+
+@media screen and (min-width: 1024px) {
+  .footer-container {
+    flex-direction: row;
+  }
+  
+  .copyright-text {
+  text-align: center;
+  }
+
+  .social-links {
+  display: flex;
+  align-items: right;
+  gap: 5px;
+}
 }
