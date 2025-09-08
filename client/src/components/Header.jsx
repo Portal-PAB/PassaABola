@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React, { useState } from 'react';
 import './Header.css';
 import Logo from '../assets/logo.png';
@@ -10,7 +11,7 @@ function Header() {
   return (
     <header className="header">
       <div className="header-container">
-        <div className="icon-placeholder logo-icon"><img src={Logo} alt="Logo" /></div>
+        <div className="icon-placeholder logo-icon"><img src={Logo} alt="Logo" className="logo-image" /></div>
         
         <button 
           className="menu-hamburguer" 
@@ -26,14 +27,18 @@ function Header() {
             <li><a href="#">Notícias</a></li>
             <li><a href="#">Jogos</a></li>
             <li><a href="#">História</a></li>
-            <li><a href="#">Copa PNB</a></li>
+            <li><Link to="/copa-pab">Copa PAB</Link></li>
             <li><a href="#">Sobre</a></li>
           </ul>
         </nav>
         
         <div className="profile-section">
-          <ProfileIcon />
+          <Link to="/login">
+            <ProfileIcon />
+          </Link>
         </div>
+
+
       </div>
     </header>
   );

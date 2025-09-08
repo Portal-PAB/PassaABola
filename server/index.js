@@ -98,6 +98,74 @@ app.post('/login', (req, res) => {
   });
 });
 
+
+app.post('/inscricao-copa', (req, res) => {
+  // Adiciona 'nomeTime' aos campos recebidos
+  const { nomeTime, responsavel, cpf, email, telefone, jogadoras } = req.body;
+  const dbEquipesPath = './equipes.json';
+
+  // Adiciona 'nomeTime' à validação
+  if (!nomeTime || !responsavel || !cpf || !email || !jogadoras || jogadoras.length === 0) {
+    return res.status(400).json({ error: 'Campos obrigatórios não preenchidos.' });
+  }
+
+  const novaEquipe = {
+    id: Date.now(),
+    nomeTime, // <-- Adicionado o novo campo
+    responsavel,
+    cpf,
+    email,
+    telefone,
+    jogadoras,
+    data_inscricao: new Date().toISOString(),
+  };
+
+  // O resto da função continua igual...
+  fs.readFile(dbEquipesPath, 'utf8', (err, data) => {
+    // ...
+    const equipes = data ? JSON.parse(data) : [];
+    equipes.push(novaEquipe);
+    // ...
+    fs.writeFile(dbEquipesPath, JSON.stringify(equipes, null, 2), (err) => {
+      // ...
+    });
+  });
+});
+
+app.post('/inscricao-jogadora', (req, res) => {
+  const { nome, cpf, email, telefone } = req.body;
+  const dbJogadorasPath = './jogadorasSemTime.json';
+
+  if (!nome || !cpf || !email) {
+    return res.status(400).json({ error: 'Nome, CPF e email são obrigatórios.' });
+  }
+
+  const novaJogadora = {
+    id: Date.now(),
+    nome,
+    cpf,
+    email,
+    telefone,
+    data_inscricao: new Date().toISOString(),
+  };
+
+  fs.readFile(dbJogadorasPath, 'utf8', (err, data) => {
+    if (err && err.code !== 'ENOENT') {
+      return res.status(500).json({ error: 'Erro ao ler o banco de dados.' });
+    }
+    const jogadoras = data ? JSON.parse(data) : [];
+    jogadoras.push(novaJogadora);
+
+    fs.writeFile(dbJogadorasPath, JSON.stringify(jogadoras, null, 2), (err) => {
+      if (err) {
+        return res.status(500).json({ error: 'Erro ao salvar a inscrição.' });
+      }
+      res.status(201).json({ success: 'Inscrição realizada com sucesso!' });
+    });
+  });
+});
+
+
 // Inicia o servidor
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
