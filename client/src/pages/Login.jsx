@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import '../styles/Login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mensagem, setMensagem] = useState('');
+  
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -20,7 +24,9 @@ function Login() {
 
       const data = await response.json();
       if (response.ok) {
-        setMensagem(data.success);
+        const userData = { email };
+        login(userData);
+        navigate('/perfil');
       } else {
         setMensagem(data.error);
       }

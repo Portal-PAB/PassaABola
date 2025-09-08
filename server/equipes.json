@@ -1,33 +1,21 @@
 [
   {
-    "id": 1757341244150,
-    "responsavel": "Matheus Freitas Vieira",
-    "idade": "17",
-    "email": "matheus.vf06@gmail.com",
-    "telefone": "31971609421",
-    "participantes": "sdgfht\ndgfthjs\ndsghj\nsedgtjh\nsedgtjhs\nertjh",
-    "data_inscricao": "2025-09-08T14:20:44.150Z"
-  },
-  {
-    "id": 1757341900526,
+    "id": 1757351984316,
+    "nomeTime": "Jumentus",
     "responsavel": "Matheus Freitas Vieira",
     "cpf": "150.770.586-79",
     "email": "matheus.vf06@gmail.com",
     "telefone": "31971609421",
     "jogadoras": [
       {
-        "nome": "dsfgsdef",
-        "cpf": "64685"
+        "nome": "Matheus Freitas Vieira",
+        "cpf": "150.770.586-79"
       },
       {
-        "nome": "cghjk",
-        "cpf": "54684"
-      },
-      {
-        "nome": "gujkmu",
-        "cpf": "4416854"
+        "nome": "Opala",
+        "cpf": "498645848"
       }
     ],
-    "data_inscricao": "2025-09-08T14:31:40.526Z"
+    "data_inscricao": "2025-09-08T17:19:44.316Z"
   }
 ]

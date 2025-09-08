@@ -23,7 +23,7 @@ function InscricaoJogadora() {
       const data = await response.json();
       if (response.ok) {
         setMensagem({ type: 'success', text: data.success });
-        // Limpa o formulário
+
         setNome(''); setCpf(''); setEmail(''); setTelefone('');
       } else {
         setMensagem({ type: 'error', text: data.error });

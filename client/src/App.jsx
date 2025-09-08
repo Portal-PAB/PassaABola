@@ -6,8 +6,9 @@ import Cadastro from './pages/Cadastro';
 import Login from './pages/Login';
 import CopaPAB from './pages/CopaPAB';
 import InscricaoCopa from './pages/InscricaoCopa';
-import InscricaoJogadora from './pages/InscricaoJogadora'; // 1. Importe o novo componente
-import EscolhaInscricao from './pages/EscolhaInscricao'; // 2. Importe o novo componente
+import InscricaoJogadora from './pages/InscricaoJogadora';
+import EscolhaInscricao from './pages/EscolhaInscricao';
+import Perfil from './pages/Perfil';
 
 import './App.css'; 
 
@@ -26,6 +27,7 @@ function App() {
         <Route path="/cadastro" element={<PageLayout><Cadastro /></PageLayout>} />
         <Route path="/login" element={<PageLayout><Login /></PageLayout>} />
         <Route path="/copa-pab" element={<PageLayout><CopaPAB /></PageLayout>} />
+        <Route path="/perfil" element={<PageLayout><Perfil /></PageLayout>} />
         
         <Route path="/inscricao" element={<PageLayout><EscolhaInscricao /></PageLayout>} />
         <Route path="/inscricao-time" element={<PageLayout><InscricaoCopa /></PageLayout>} />

@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom';
 import React, { useState } from 'react';
 import './Header.css';
 import Logo from '../assets/logo.png';
+import { useAuth } from '../context/AuthContext';
 
 const ProfileIcon = () => <div className="icon-placeholder profile-icon">👤</div>;
 
 function Header() {
   const [menuAberto, setMenuAberto] = useState(false);
+  const { user } = useAuth();
 
   return (
     <header className="header">
@@ -33,11 +35,16 @@ function Header() {
         </nav>
         
         <div className="profile-section">
-          <Link to="/login">
-            <ProfileIcon />
-          </Link>
+          {user ? (
+            <Link to="/perfil">
+              <ProfileIcon />
+            </Link>
+          ) : (
+            <Link to="/login">
+              <ProfileIcon />
+            </Link>
+          )}
         </div>
-
 
       </div>
     </header>

@@ -13,9 +13,8 @@ function EscolhaInscricao() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Card para Inscrever Time */}
           <Link 
-            to="/inscricao-time" // Link para o formulário que já criamos
+            to="/inscricao-time" 
             className="block p-8 rounded-2xl shadow-lg border-2 border-gray-200 text-center transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl hover:border-purple-500"
           >
             <div className="text-5xl mb-4">👨‍👩‍👧‍👧</div>
@@ -23,9 +22,8 @@ function EscolhaInscricao() {
             <p className="text-gray-500 mt-2">Reúna suas jogadoras e inscreva a equipe completa na copa.</p>
           </Link>
 
-          {/* Card para Inscrever Jogadora */}
           <Link 
-            to="/inscricao-jogadora" // Link para o novo formulário
+            to="/inscricao-jogadora"
             className="block p-8 rounded-2xl shadow-lg border-2 border-gray-200 text-center transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl hover:border-blue-500"
           >
             <div className="text-5xl mb-4">🙋‍♀️</div>

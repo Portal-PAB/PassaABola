@@ -1,20 +1,16 @@
 import React, { useState } from 'react';
 
 function InscricaoCopa() {
-  // Novo estado para o nome do time
   const [nomeTime, setNomeTime] = useState('');
-
-  // Estados para os dados da responsável
   const [responsavel, setResponsavel] = useState('');
   const [cpf, setCpf] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
-  
-  // Estado para a lista de jogadoras
+
   const [jogadoras, setJogadoras] = useState([{ nome: '', cpf: '' }]);
   
   const [mensagem, setMensagem] = useState('');
-  const MAX_JOGADORAS = 15; // Define o número máximo de jogadoras
+  const MAX_JOGADORAS = 15;
 
   const handleJogadoraChange = (index, event) => {
     const novasJogadoras = [...jogadoras];
@@ -22,9 +18,7 @@ function InscricaoCopa() {
     setJogadoras(novasJogadoras);
   };
 
-  // Função para adicionar jogadora com o limite
   const addJogadora = () => {
-    // Apenas adiciona se o número atual for menor que o máximo
     if (jogadoras.length < MAX_JOGADORAS) {
       setJogadoras([...jogadoras, { nome: '', cpf: '' }]);
     }
@@ -40,7 +34,6 @@ function InscricaoCopa() {
     event.preventDefault();
     setMensagem('');
 
-    // Inclui o nomeTime nos dados a serem enviados
     const inscricaoData = { nomeTime, responsavel, cpf, email, telefone, jogadoras };
 
     try {
@@ -53,7 +46,6 @@ function InscricaoCopa() {
       const data = await response.json();
       if (response.ok) {
         setMensagem({ type: 'success', text: data.success });
-        // Limpa o formulário todo
         setNomeTime(''); setResponsavel(''); setCpf(''); setEmail(''); setTelefone('');
         setJogadoras([{ nome: '', cpf: '' }]);
       } else {
@@ -72,7 +64,6 @@ function InscricaoCopa() {
         </h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Dados da Equipe */}
           <fieldset className="space-y-6 border-b-2 pb-6 border-gray-200">
              <legend className="text-xl font-semibold text-gray-700 mb-4">Dados da Equipe</legend>
              <div>
@@ -81,7 +72,6 @@ function InscricaoCopa() {
             </div>
           </fieldset>
 
-          {/* Dados da Responsável */}
           <fieldset className="space-y-6 border-b-2 pb-6 border-gray-200">
             <legend className="text-xl font-semibold text-gray-700 mb-4">Dados da Responsável</legend>
             <div>
@@ -102,7 +92,6 @@ function InscricaoCopa() {
             </div>
           </fieldset>
 
-          {/* Dados das Jogadoras */}
           <fieldset className="space-y-4">
             <legend className="text-xl font-semibold text-gray-700 mb-4">Dados das Jogadoras ({jogadoras.length}/{MAX_JOGADORAS})</legend>
             {jogadoras.map((jogadora, index) => (
@@ -123,8 +112,7 @@ function InscricaoCopa() {
                 </div>
               </div>
             ))}
-            
-            {/* Botão para adicionar jogadora, agora com a lógica de desabilitar */}
+
             <button 
               type="button" 
               onClick={addJogadora} 
@@ -138,7 +126,6 @@ function InscricaoCopa() {
             )}
           </fieldset>
 
-          {/* Finalizar */}
           <div>
             <button type="submit" className="w-full bg-purple-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-800 transition duration-300 text-lg">
               Finalizar Inscrição
