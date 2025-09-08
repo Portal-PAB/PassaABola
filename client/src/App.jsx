@@ -9,6 +9,7 @@ import InscricaoCopa from './pages/InscricaoCopa';
 import InscricaoJogadora from './pages/InscricaoJogadora';
 import EscolhaInscricao from './pages/EscolhaInscricao';
 import Perfil from './pages/Perfil';
+import Jogos from './pages/Jogos';
 
 import './App.css'; 
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/login" element={<PageLayout><Login /></PageLayout>} />
         <Route path="/copa-pab" element={<PageLayout><CopaPAB /></PageLayout>} />
         <Route path="/perfil" element={<PageLayout><Perfil /></PageLayout>} />
+        <Route path="/jogos" element={<PageLayout><Jogos /></PageLayout>} />
         
         <Route path="/inscricao" element={<PageLayout><EscolhaInscricao /></PageLayout>} />
         <Route path="/inscricao-time" element={<PageLayout><InscricaoCopa /></PageLayout>} />

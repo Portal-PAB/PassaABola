@@ -1,0 +1,7 @@
+[
+  { "pos": 1, "time": { "nome": "Cruzeiro", "logo": "https://via.placeholder.com/20" }, "P": 34, "J": 14, "V": 11, "E": 1, "D": 2, "SG": 23 },
+  { "pos": 2, "time": { "nome": "Corinthians", "logo": "https://via.placeholder.com/20" }, "P": 31, "J": 14, "V": 10, "E": 1, "D": 3, "SG": 25 },
+  { "pos": 3, "time": { "nome": "Ferroviária", "logo": "https://via.placeholder.com/20" }, "P": 31, "J": 14, "V": 10, "E": 1, "D": 3, "SG": 18 },
+  { "pos": 4, "time": { "nome": "São Paulo", "logo": "https://via.placeholder.com/20" }, "P": 29, "J": 14, "V": 9, "E": 2, "D": 3, "SG": 20 },
+  { "pos": 5, "time": { "nome": "Flamengo", "logo": "https://via.placeholder.com/20" }, "P": 29, "J": 14, "V": 9, "E": 2, "D": 3, "SG": 16 }
+]

@@ -27,7 +27,7 @@ function Header() {
         <nav className={`menu-nav ${menuAberto ? 'ativo' : ''}`}>
           <ul>
             <li><a href="#">Notícias</a></li>
-            <li><a href="#">Jogos</a></li>
+            <li><Link to="/jogos">Jogos</Link></li> {/* <-- Altere esta linha */}
             <li><a href="#">História</a></li>
             <li><Link to="/copa-pab">Copa PAB</Link></li>
             <li><a href="#">Sobre</a></li>
