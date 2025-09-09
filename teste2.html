@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Download PDF</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <button onclick="baixarPDF()">Baixar PDF</button>
+
+  <script>
+    async function baixarPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Relatório de Pessoas", 10, 20);
+
+      const dados = [
+        { nome: "Matheus", idade: 22, cidade: "São Paulo" },
+        { nome: "Ana", idade: 25, cidade: "Belo Horizonte" },
+        { nome: "Carlos", idade: 30, cidade: "Rio de Janeiro" }
+      ];
+
+      let y = 40;
+      dados.forEach(p => {
+        doc.setFontSize(12);
+        doc.text(`${p.nome} - ${p.idade} anos - ${p.cidade}`, 10, y);
+        y += 10;
+      });
+
+      // Dispara download
+      doc.save("relatorio.pdf");
+    }
+  </script>
+</body>
+</html>
+
