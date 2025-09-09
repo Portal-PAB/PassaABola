@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1757426017940,
+    "titulo": "dtyjiyuikl",
+    "imagens": [],
+    "destaque": false,
+    "resumo": "fukyuilkotyi",
+    "conteudo": "stuhyedtryju\n\ntyjrdtyujk\n\n\ntyjrtyujkr\n\ntyjkrtyujkir"
+  },
+  {
+    "id": 1757425908040,
+    "titulo": "Teste2",
+    "imagens": [],
+    "destaque": false,
+    "resumo": "sdfgerfgsgtbhsrt",
+    "conteudo": "gggggggggggggggggggggggggggggggggg\n\nggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg\ngggggggggggggggggggggggg"
+  },
+  {
+    "id": 1757425680845,
+    "titulo": "Teste",
+    "imagens": [],
+    "destaque": true,
+    "resumo": "fsebdufrgvaukfserbfgoysergsoeyrghsebrtugy",
+    "conteudo": "rfgiuhhasedigbhsiuerthgbsiujebtgi\ndsfjujgbhsebtrguysbetrlgu\nsrgjubhseiurgbhsergtbiusybetrg\ndfubgsegbrtuysbertugyb\nsdrfhgbiusebrguhybsertg"
+  },
+  {
+    "id": 1,
+    "titulo": "Brasileirão Feminino: Corinthians vence, sobe na tabela e vira vice-líder",
+    "imagens": [
+      "https://i.sstatic.net/wYQ20.jpg",
+      "https://i.sstatic.net/GkL6y.jpg",
+      "https://i.sstatic.net/m9Y8B.jpg"
+    ],
+    "destaque": true,
+    "resumo": "Em um jogo emocionante, o Corinthians superou o adversário por 2 a 1 e garantiu a segunda posição no campeonato.",
+    "conteudo": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent laoreet, lacus id fermentum tincidunt, nisl massa commodo odio, sit amet dictum sem elit id dolor. Cras nec enim porttitor, facilisis tortor vel, volutpat nisl. Fusce ut scelerisque felis.\n\nPellentesque volutpat elit et semper aliquet. In hac habitasse platea dictumst. Curabitur vitae nisi eget nunc volutpat commodo. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nVivamus elementum, felis et suscipit malesuada, sapien nulla ultrices nulla, et lacinia elit justo et tortor. Nunc pellentesque, purus ut sagittis scelerisque, sapien sem efficitur elit, vel aliquet nulla nisi et justo. Maecenas nec odio et ante tincidunt tempus."
+  },
+  {
+    "id": 2,
+    "titulo": "Seleção brasileira: apenas seis atletas continuam na equipe após renovação",
+    "imagens": [
+      "https://i.sstatic.net/GkL6y.jpg"
+    ],
+    "destaque": false,
+    "resumo": "O técnico promoveu uma grande mudança na lista de convocadas, visando a preparação para os próximos torneios internacionais.",
+    "conteudo": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+  },
+  {
+    "id": 3,
+    "titulo": "Ferroviária anuncia retorno da atacante Micaelly: 'Não via sentido'",
+    "imagens": [],
+    "destaque": false,
+    "resumo": "Após uma passagem por outro clube, a jogadora retorna à Ferroviária para reforçar o ataque na temporada.",
+    "conteudo": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\n\nExcepteur sint occaecat cupidatat non proident. Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+  },
+  {
+    "id": 4,
+    "titulo": "Em Natal, Antônia e Duda Sampaio comemoram convocação para a Copa América",
+    "imagens": [
+      "https://i.sstatic.net/zZ03N.jpg",
+      "https://i.sstatic.net/wYQ20.jpg"
+    ],
+    "destaque": false,
+    "resumo": "As atletas foram celebradas em sua cidade natal após serem confirmadas na lista final da seleção para o torneio continental.",
+    "conteudo": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+  }
+]

@@ -1,41 +1,57 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
+
+// Layouts
+import PageLayout from './components/layout/PageLayout';
+import AdminLayout from './pages/admin/AdminLayout';
+
+// Autenticação
+import ProtectedRoute from './components/auth/ProtectedRoute';
+
+// Páginas Públicas
 import Cadastro from './pages/Cadastro';
 import Login from './pages/Login';
+import Perfil from './pages/Perfil';
+import Noticias from './pages/Noticias';
+import NoticiaDetalhe from './pages/NoticiaDetalhe';
+import Jogos from './pages/Jogos';
 import CopaPAB from './pages/CopaPAB';
+import EscolhaInscricao from './pages/EscolhaInscricao';
 import InscricaoCopa from './pages/InscricaoCopa';
 import InscricaoJogadora from './pages/InscricaoJogadora';
-import EscolhaInscricao from './pages/EscolhaInscricao';
-import Perfil from './pages/Perfil';
-import Jogos from './pages/Jogos';
+
+// Páginas de Admin
+import AdminDashboard from './pages/admin/AdminDashboard';
+import GerenciarNoticias from './pages/admin/GerenciarNoticias';
+import VerInscricoes from './pages/admin/VerInscricoes';
 
 import './App.css'; 
-
-const PageLayout = ({ children }) => (
-  <div className="app-container">
-    <Header />
-    <main className="main-content">{children}</main>
-    <Footer />
-  </div>
-);
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/cadastro" element={<PageLayout><Cadastro /></PageLayout>} />
-        <Route path="/login" element={<PageLayout><Login /></PageLayout>} />
-        <Route path="/copa-pab" element={<PageLayout><CopaPAB /></PageLayout>} />
-        <Route path="/perfil" element={<PageLayout><Perfil /></PageLayout>} />
-        <Route path="/jogos" element={<PageLayout><Jogos /></PageLayout>} />
-        
-        <Route path="/inscricao" element={<PageLayout><EscolhaInscricao /></PageLayout>} />
-        <Route path="/inscricao-time" element={<PageLayout><InscricaoCopa /></PageLayout>} />
-        <Route path="/inscricao-jogadora" element={<PageLayout><InscricaoJogadora /></PageLayout>} />
+        {/* --- Rotas Públicas (todas usam o PageLayout) --- */}
+        <Route element={<PageLayout />}>
+          <Route path="/cadastro" element={<Cadastro />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/noticias" element={<Noticias />} />
+          <Route path="/noticias/:id" element={<NoticiaDetalhe />} />
+          <Route path="/jogos" element={<Jogos />} />
+          <Route path="/copa-pab" element={<CopaPAB />} />
+          <Route path="/inscricao" element={<EscolhaInscricao />} />
+          <Route path="/inscricao-time" element={<InscricaoCopa />} />
+          <Route path="/inscricao-jogadora" element={<InscricaoJogadora />} />
+          <Route path="/" element={<Navigate to="/noticias" />} /> {/* Rota inicial agora é /noticias */}
+        </Route>
 
-        <Route path="*" element={<Navigate to="/cadastro" />} />
+        {/* --- Rotas de Admin (Protegidas e com Layout Próprio) --- */}
+        <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="noticias" element={<GerenciarNoticias />} />
+          <Route path="inscricoes" element={<VerInscricoes />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
