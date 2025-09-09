@@ -1,6 +1,6 @@
 [
   {
-    "id": 1757351984316,
+    "id": 1757446192756,
     "nomeTime": "Jumentus",
     "responsavel": "Matheus Freitas Vieira",
     "cpf": "150.770.586-79",
@@ -12,10 +12,14 @@
         "cpf": "150.770.586-79"
       },
       {
-        "nome": "Opala",
-        "cpf": "498645848"
+        "nome": "Leila Mara Freitas Vieira",
+        "cpf": "838.858.116-34"
+      },
+      {
+        "nome": "Matheus Freitas Vieira",
+        "cpf": "150.770.586-79"
       }
     ],
-    "data_inscricao": "2025-09-08T17:19:44.316Z"
+    "data_inscricao": "2025-09-09T19:29:52.756Z"
   }
 ]

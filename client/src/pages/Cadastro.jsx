@@ -23,7 +23,6 @@ function Cadastro() {
       return;
     }
 
-    // Lógica de envio para o backend
     try {
       const response = await fetch('http://localhost:3001/cadastro', {
         method: 'POST',

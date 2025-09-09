@@ -7,7 +7,6 @@ export default function PageLayout() {
   return (
     <div className="app-container">
       <Header />
-      {/* O Outlet renderiza a página atual (Cadastro, Login, etc.) aqui dentro */}
       <main className="main-content">
         <Outlet />
       </main>

@@ -11,9 +11,7 @@ function Perfil() {
     navigate('/login');
   };
 
-  // Esta verificação agora é ainda mais importante
   if (!user) {
-    // Para evitar um piscar da tela, podemos retornar null enquanto o contexto carrega
     return null; 
   }
 
@@ -22,8 +20,6 @@ function Perfil() {
       <div className="max-w-md mx-auto">
         <h1 className="text-4xl font-bold mb-4">Bem-vindo!</h1>
         <p className="text-xl text-gray-600 mb-8">
-          {/* Usando optional chaining: user?.email */}
-          {/* Isso tenta ler 'user.email', mas se 'user' for nulo, ele para e não dá erro. */}
           Você está logado com o email: <span className="font-semibold">{user?.email}</span>
         </p>
         

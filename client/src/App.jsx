@@ -24,6 +24,9 @@ import InscricaoJogadora from './pages/InscricaoJogadora';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import GerenciarNoticias from './pages/admin/GerenciarNoticias';
 import VerInscricoes from './pages/admin/VerInscricoes';
+import AdicionarNoticia from './pages/admin/AdicionarNoticia';
+import EditarNoticia from './pages/admin/EditarNoticia';
+import GerenciarCopas from './pages/admin/GerenciarCopas';
 
 import './App.css'; 
 
@@ -31,7 +34,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* --- Rotas Públicas (todas usam o PageLayout) --- */}
         <Route element={<PageLayout />}>
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/login" element={<Login />} />
@@ -43,13 +45,15 @@ function App() {
           <Route path="/inscricao" element={<EscolhaInscricao />} />
           <Route path="/inscricao-time" element={<InscricaoCopa />} />
           <Route path="/inscricao-jogadora" element={<InscricaoJogadora />} />
-          <Route path="/" element={<Navigate to="/noticias" />} /> {/* Rota inicial agora é /noticias */}
+          <Route path="/" element={<Navigate to="/noticias" />} />
         </Route>
 
-        {/* --- Rotas de Admin (Protegidas e com Layout Próprio) --- */}
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<AdminDashboard />} />
           <Route path="noticias" element={<GerenciarNoticias />} />
+          <Route path="noticias/nova" element={<AdicionarNoticia />} />
+          <Route path="noticias/editar/:id" element={<EditarNoticia />} />
+          <Route path="copas" element={<GerenciarCopas />} />
           <Route path="inscricoes" element={<VerInscricoes />} />
         </Route>
       </Routes>
