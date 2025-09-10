@@ -1,10 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import inscricaoIcon from '../assets/inscricao.png';
+import fotosIcon from '../assets/fotos.png';
+import chaveamentoIcon from '../assets/chaveamento.png';
 
-const InscricaoIcon = () => <div className="text-5xl">📝</div>;
-const FotosIcon = () => <div className="text-5xl">🖼️</div>;
-const ChaveamentoIcon = () => <div className="text-5xl">🏆</div>;
-const LogoIcon = () => <div className="text-3xl">⚽</div>;
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFutbol } from "@fortawesome/free-solid-svg-icons"
+
+const InscricaoIcon = () => <div className="text-5xl"><img src={inscricaoIcon} alt="Icon prancheta inscrição" /></div>;
+const FotosIcon = () => <div className="text-5xl"><img src={fotosIcon} alt="Icon galeria de fotos" /></div>; 
+const ChaveamentoIcon = () => <div className="text-5xl"><img src={chaveamentoIcon} alt="Icon chaveamento" /></div>;
+const LogoIcon = () => <div className="text-3xl"><FontAwesomeIcon icon={faFutbol} /></div>;
 
 const CardLink = ({ to, icon, title, description, highlighted = false }) => {
   const borderColor = highlighted ? 'border-blue-500' : 'border-gray-200';

@@ -3,6 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 
 import noticiasData from '../data/mockNoticias.json';
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons"
+
 function NoticiaDetalhe() {
   const { id } = useParams();
   const [noticia, setNoticia] = useState(null);
@@ -25,7 +28,7 @@ function NoticiaDetalhe() {
     <div className="bg-white min-h-full py-8 px-4">
       <div className="max-w-4xl mx-auto">
         <Link to="/noticias" className="text-purple-600 hover:text-purple-800 mb-8 inline-block">
-          &larr; Voltar para todas as notícias
+          <FontAwesomeIcon icon={faArrowLeft} /> Voltar para todas as notícias
         </Link>
 
         <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
