@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import './Header.css';
 import Logo from '../assets/logo.png';
 import { useAuth } from '../context/AuthContext';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons"
 
-const ProfileIcon = () => <div className="icon-placeholder profile-icon">👤</div>;
+const ProfileIcon = () => <div className="icon-placeholder profile-icon"><FontAwesomeIcon icon={faUser} /></div>;
 
 function Header() {
   const [menuAberto, setMenuAberto] = useState(false);

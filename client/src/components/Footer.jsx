@@ -1,23 +1,23 @@
 import React from 'react';
 import './Footer.css';
-import Insta from '../assets/instagram.png';
-import X from '../assets/x.png';
-import Youtube from '../assets/youtube.png';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInstagram, faXTwitter, faYoutube } from "@fortawesome/free-brands-svg-icons";
+import { faCopyright } from "@fortawesome/free-regular-svg-icons";
 
 function Footer() {
   return (
     <footer className="footer">
       <div className="footer-container">
-        <p className="copyright-text">© 2025 Passa a Bola. Todos os direitos reservados</p>
+        <p className="copyright-text"><FontAwesomeIcon icon={faCopyright} /> 2025 Passa a Bola. Todos os direitos reservados</p>
         <div className="social-links">
           <a href="https://www.instagram.com/passaabola/" target="_blank" className='Insta'>
-            <img src={Insta} alt="Instagram"/>
+            <FontAwesomeIcon icon={faInstagram} size="2x" />
           </a>
           <a href="https://x.com/passaabola" target="_blank" className='X'>
-            <img src={X} alt="X"/>
+            <FontAwesomeIcon icon={faXTwitter} size='2x' />
           </a>
           <a href="https://www.youtube.com/@passabola" target="_blank">
-            <img src={Youtube} alt="Youtube"/>
+            <FontAwesomeIcon icon={faYoutube} size='2x'/>
           </a>
         </div>
       </div>
