@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Cadastro.css';
-import { Link } from 'react-router-dom';
 
 function Cadastro() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [termos, setTermos] = useState(false);
+  const [cpf, setCpf] = useState(''); // Estado para o CPF
   const [mensagem, setMensagem] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -18,21 +19,17 @@ function Cadastro() {
       setMensagem('As senhas não coincidem!');
       return;
     }
-    if (!termos) {
-      setMensagem('Você precisa aceitar os termos de uso.');
-      return;
-    }
 
     try {
       const response = await fetch('http://localhost:3001/cadastro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, senha }),
+        body: JSON.stringify({ nome, email, senha, cpf }), // Envia o CPF
       });
       const data = await response.json();
       if (response.ok) {
-        setMensagem(data.success);
-        setNome(''); setEmail(''); setSenha(''); setConfirmarSenha(''); setTermos(false);
+        alert('Cadastro realizado com sucesso! Você será redirecionado para o login.');
+        navigate('/login');
       } else {
         setMensagem(data.error);
       }
@@ -48,64 +45,38 @@ function Cadastro() {
         
         <div className="input-group-classic">
           <label htmlFor="nome">Nome:</label>
-          <input
-            id="nome"
-            type="text"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
-            required
-          />
+          <input id="nome" type="text" value={nome} onChange={(e) => setNome(e.target.value)} required />
+        </div>
+
+        {/* --- CAMPO DE CPF ADICIONADO --- */}
+        <div className="input-group-classic">
+          <label htmlFor="cpf">CPF:</label>
+          <input id="cpf" type="text" value={cpf} onChange={(e) => setCpf(e.target.value)} required />
         </div>
 
         <div className="input-group-classic">
           <label htmlFor="email">Email:</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
 
         <div className="input-group-classic">
           <label htmlFor="senha">Senha:</label>
-          <input
-            id="senha"
-            type="password"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            required
-          />
+          <input id="senha" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
         </div>
         
         <div className="input-group-classic">
           <label htmlFor="confirmarSenha">Confirmar senha:</label>
-          <input
-            id="confirmarSenha"
-            type="password"
-            value={confirmarSenha}
-            onChange={(e) => setConfirmarSenha(e.target.value)}
-            required
-          />
+          <input id="confirmarSenha" type="password" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} required />
         </div>
 
-        <div className="checkbox-group">
-          <input 
-            type="checkbox" 
-            id="termos"
-            checked={termos}
-            onChange={(e) => setTermos(e.target.checked)}
-          />
-          <label htmlFor="termos">Aceito os Termos de Uso</label>
-        </div>
+        {/* O checkbox de Termos foi removido do fluxo de cadastro principal, mas pode ser adicionado de volta se necessário */}
         
         <button type="submit" className="submit-button">Cadastrar</button>
 
         {mensagem && <p className="mensagem-feedback">{mensagem}</p>}
         
         <p className="login-link">
-            Já tem uma conta? <Link to="/login">Faça login para continuar.</Link>
+          Já tem uma conta? <Link to="/login">Faça login para continuar.</Link>
         </p>
 
       </form>

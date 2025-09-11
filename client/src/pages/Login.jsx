@@ -14,24 +14,31 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setMensagem('');
-
     try {
-      const response = await fetch('http://localhost:3001/login', {
+      // 1. Primeiro, verifica se a senha está correta
+      const loginResponse = await fetch('http://localhost:3001/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, senha }),
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        const userData = { email };
-        login(userData);
-        navigate('/perfil');
-      } else {
-        setMensagem(data.error);
+      if (!loginResponse.ok) {
+        const errorData = await loginResponse.json();
+        throw new Error(errorData.error || 'Senha incorreta.');
       }
+
+      // 2. Se a senha está correta, busca os dados completos do usuário
+      const userResponse = await fetch(`http://localhost:3001/api/usuario/${email}`);
+      const userData = await userResponse.json();
+      
+      // 3. Salva os dados completos no contexto global
+      login(userData);
+      
+      // 4. Redireciona para o perfil
+      navigate('/perfil');
+
     } catch (error) {
-      setMensagem('Erro de conexão com o servidor.');
+      setMensagem(error.message);
     }
   };
 

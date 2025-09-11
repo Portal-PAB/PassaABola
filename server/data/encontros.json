@@ -1,10 +1,10 @@
 [
   {
-    "id": 1757526084083,
-    "nome": "Teste1",
+    "id": 1757599867470,
+    "nome": "Teste2",
     "data": "2025-09-20",
     "local": "São Paulo",
-    "limiteInscritos": 30,
+    "limiteInscritos": 20,
     "status": "aberta"
   }
 ]

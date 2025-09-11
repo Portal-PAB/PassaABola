@@ -2,31 +2,18 @@
   {
     "nome": "Matheus Freitas Vieira",
     "email": "matheus.vf06@gmail.com",
-    "senhaHash": "$2b$10$iNGtcO5ZhAbGz/JGlrS3vuZHai0HZUME2m22mh368Y6pg3zyKQfpO"
-  },
-  {
-    "nome": "Matheus",
-    "email": "teste@gmail.com",
-    "senhaHash": "$2b$10$4INOKfIy0dYyx2Qks2XOs.I.YNSGt/W0iMjJ6OKx50I.dGtiDFuEG"
-  },
-  {
-    "nome": "Teste4",
-    "email": "matheus@gmail.com",
-    "senhaHash": "$2b$10$7cEo4k43xhWChDgznv53FeMTS/Y/pCZJbjwJe/sR2/KQIVnzabeTe"
+    "senhaHash": "$2b$10$auoUWgqQ4mk/3mmSy/AZPeKLWl.pKF3O9PSLtm5xT7nPqcrtLXf9C",
+    "timeFavoritoId": "9980"
   },
   {
     "nome": "Teste",
+    "email": "teste@gmail.com",
+    "senhaHash": "$2b$10$pr5Cj84NWHvHuJgySsQ4eO5VP5NpLjcuh92SFYQTCcScU2WsEU6pS"
+  },
+  {
+    "nome": "Teste2",
     "email": "teste1@gmail.com",
-    "senhaHash": "$2b$10$7VyXZ1.mKljfiFVrnjK4j.HTrcCj/fAwjVNyXFheLB91Nx3N4HbdC"
-  },
-  {
-    "nome": "Matheus Freitas Vieira",
-    "email": "matheus.vf06@g.com",
-    "senhaHash": "$2b$10$W3yahzmskVacxEw5yhN3RurUZzp7rd/hh6F158i9QzXa.QjJe1TZm"
-  },
-  {
-    "nome": "Matheus Freitas Vieira",
-    "email": "matias@gmail.com",
-    "senhaHash": "$2b$10$KMr6.m7.IpXfHSW4CJ0EgundMx8l2K3QcV0voYp0ejK.QKxtY4VVu"
+    "cpf": "123.456.789.10",
+    "senhaHash": "$2b$10$k6nArw8vgihzUufY8V7D/eBFK5gp59GJstNX/hxX03vlrbwhVmEz6"
   }
 ]

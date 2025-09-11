@@ -34,15 +34,15 @@ const writeJsonFile = (filePath, data) => {
 
 // --- Rotas de Autenticação ---
 app.post('/cadastro', async (req, res) => {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, cpf } = req.body; // 1. Adicione 'cpf' aqui
   const dbPath = path.join(dataDir, 'contas.json');
-  if (!nome || !email || !senha) return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+  if (!nome || !email || !senha || !cpf) return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
   
   const contas = await readJsonFile(dbPath);
-  if (contas.find(conta => conta.email === email)) return res.status(400).json({ error: 'Este email já está em uso.' });
+  if (contas.find(conta => conta.email === email || conta.cpf === cpf)) return res.status(400).json({ error: 'Este email ou CPF já está em uso.' });
 
   const hash = await bcrypt.hash(senha, saltRounds);
-  contas.push({ nome, email, senhaHash: hash });
+  contas.push({ nome, email, cpf, senhaHash: hash });
   await writeJsonFile(dbPath, contas);
   res.status(201).json({ success: 'Conta criada com sucesso!' });
 });
@@ -165,46 +165,16 @@ app.post('/inscricao-jogadora', async (req, res) => {
     res.status(201).json({ success: 'Inscrição realizada com sucesso!' });
 });
 
-// --- ROTAS DE GERENCIAMENTO DE ENCONTROS ---
-
-app.post('/api/encontros', async (req, res) => {
-  const { nome, data, local, limiteInscritos } = req.body;
-  const dbEncontrosPath = path.join(dataDir, 'encontros.json');
-  if (!nome || !data || !local || !limiteInscritos) return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
-
-  let encontros = await readJsonFile(dbEncontrosPath);
-  // Garante que apenas um encontro pode estar aberto por vez
-  encontros = encontros.map(encontro => ({ ...encontro, status: 'fechado' }));
-  
-  const novoEncontro = { id: Date.now(), nome, data, local, limiteInscritos: parseInt(limiteInscritos), status: 'aberta' };
-  encontros.push(novoEncontro);
-
-  await writeJsonFile(dbEncontrosPath, encontros);
-  res.status(201).json({ success: 'Encontro criado e aberto para inscrições!', encontro: novoEncontro });
-});
-
-app.get('/api/encontros/aberto', async (req, res) => {
-    const dbEncontrosPath = path.join(dataDir, 'encontros.json');
-    const encontros = await readJsonFile(dbEncontrosPath);
-    const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
-    res.json(encontroAberto || null);
-});
-
-app.get('/api/encontros', async (req, res) => {
-    const dbEncontrosPath = path.join(dataDir, 'encontros.json');
-    const encontros = await readJsonFile(dbEncontrosPath);
-    res.json(encontros);
-});
-
-
 // --- ROTA DE INSCRIÇÃO PARA ENCONTRO ---
 app.post('/inscricao-encontro', async (req, res) => {
     const encontros = await readJsonFile(path.join(dataDir, 'encontros.json'));
     const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
     if (!encontroAberto) return res.status(403).json({ error: 'Nenhum encontro aberto para inscrições.' });
 
-    const { user } = req.body; // Recebe os dados do usuário logado
-    if (!user) return res.status(400).json({ error: 'Usuário não identificado.' });
+    const { nome, cpf, email, telefone } = req.body;
+    if (!nome || !email) {
+        return res.status(400).json({ error: 'Nome e email são obrigatórios.' });
+    }
 
     const dbInscricoesPath = path.join(dataDir, `encontro-${encontroAberto.id}-inscricoes.json`);
     const inscricoes = await readJsonFile(dbInscricoesPath);
@@ -215,16 +185,25 @@ app.post('/inscricao-encontro', async (req, res) => {
     }
 
     // Verifica se o usuário já está inscrito
-    if (inscricoes.find(insc => insc.email === user.email)) {
+    if (inscricoes.find(insc => insc.email === email)) {
         return res.status(409).json({ error: 'Você já está inscrito neste encontro.' });
     }
 
-    const novaInscricao = { id: Date.now(), nome: user.name, email: user.email, data_inscricao: new Date().toISOString() };
+    const novaInscricao = {
+        id: Date.now(),
+        nome,
+        cpf,
+        email,
+        telefone,
+        data_inscricao: new Date().toISOString()
+    };
+
     inscricoes.push(novaInscricao);
     await writeJsonFile(dbInscricoesPath, inscricoes);
 
     res.status(201).json({ success: 'Inscrição no encontro realizada com sucesso!' });
 });
+
 
 
 // ROTA PARA BUSCAR OS INSCRITOS DE UM ENCONTRO
@@ -451,6 +430,211 @@ app.get('/api/artilharia', async (req, res) => {
     res.status(500).json({ error: 'Erro ao buscar dados da artilharia.' });
   }
 });
+
+
+// ... (após as rotas existentes)
+
+// ROTA PARA BUSCAR DADOS COMPLETOS DE UM USUÁRIO (PARA O CONTEXTO)
+app.get('/api/usuario/:email', async (req, res) => {
+    const userEmail = req.params.email;
+    const dbPath = path.join(dataDir, 'contas.json');
+    const contas = await readJsonFile(dbPath);
+    const conta = contas.find(c => c.email === userEmail);
+    if (conta) {
+        // Não enviamos o hash da senha, por segurança
+        const { senhaHash, ...userData } = conta;
+        res.json(userData);
+    } else {
+        res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+});
+
+// ROTA PARA SALVAR O TIME FAVORITO DE UM USUÁRIO
+app.post('/api/usuario/favoritar-time', async (req, res) => {
+    const { email, timeId } = req.body;
+    const dbPath = path.join(dataDir, 'contas.json');
+    let contas = await readJsonFile(dbPath);
+    const userIndex = contas.findIndex(c => c.email === email);
+
+    if (userIndex === -1) {
+        return res.status(404).json({ error: 'Usuário não encontrado.' });
+    }
+    
+    contas[userIndex].timeFavoritoId = timeId;
+
+    await writeJsonFile(dbPath, contas);
+
+    const { senhaHash, ...updatedUser } = contas[userIndex];
+    res.json({ success: 'Time favorito salvo com sucesso!', user: updatedUser });
+});
+
+// ROTA PARA BUSCAR TODOS OS TIMES DE UMA LIGA
+app.get('/api/ligas/:leagueId/times', async (req, res) => {
+    const { leagueId } = req.params;
+    const options = {
+        method: 'GET',
+        url: 'https://v3.football.api-sports.io/teams',
+        params: { league: leagueId, season: '2023' },
+        headers: apiConfig.headers
+    };
+    try {
+        const response = await axios.request(options);
+        res.json(response.data.response);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar times da liga.' });
+    }
+});
+
+// ROTA PARA BUSCAR PARTIDAS DE UM TIME ESPECÍFICO
+app.get('/api/times/:timeId/partidas', async (req, res) => {
+    const { timeId } = req.params;
+    const options = {
+        method: 'GET',
+        url: 'https://v3.football.api-sports.io/fixtures',
+        params: { team: timeId, season: '2023' }, // Próximas 5 partidas
+        headers: apiConfig.headers
+    };
+    try {
+        const response = await axios.request(options);
+        const partidasFormatadas = response.data.response.map(partida => ({
+            id: partida.fixture.id,
+            campeonato: partida.league.name,
+            timeCasa: { nome: partida.teams.home.name, logo: partida.teams.home.logo },
+            timeFora: { nome: partida.teams.away.name, logo: partida.teams.away.logo },
+            data: new Date(partida.fixture.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+            hora: new Date(partida.fixture.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        }));
+        res.json(partidasFormatadas);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar partidas do time.' });
+    }
+});
+
+
+// ROTA PARA BUSCAR TODAS AS INSCRIÇÕES DE UM USUÁRIO (VERSÃO ATUALIZADA)
+app.get('/api/usuario/minhas-inscricoes/:email', async (req, res) => {
+    const { email } = req.params;
+    let inscricoes = { copa: null, encontro: null, copaAvulsa: null }; // Adicionado copaAvulsa
+
+    const contas = await readJsonFile(path.join(dataDir, 'contas.json'));
+    const usuarioLogado = contas.find(c => c.email === email);
+    if (!usuarioLogado) return res.json(inscricoes);
+    const cpfUsuarioLogado = usuarioLogado.cpf;
+
+    // --- Lógica para Copa (Time e Avulsa) ---
+    const copas = await readJsonFile(path.join(dataDir, 'copas.json'));
+    const copaAberta = copas.find(copa => copa.status === 'aberta');
+    if (copaAberta) {
+        // 1. Verifica se é responsável por um time
+        const equipesFile = path.join(dataDir, `copa-${copaAberta.id}-equipes.json`);
+        const equipes = await readJsonFile(equipesFile);
+        let equipeEncontrada = equipes.find(e => e.email === email);
+        if (equipeEncontrada) {
+            inscricoes.copa = { ...equipeEncontrada, role: 'responsavel' };
+        } else {
+            // 2. Se não, verifica se está como jogadora em um time
+            equipeEncontrada = equipes.find(e => e.jogadoras.some(j => j.cpf === cpfUsuarioLogado));
+            if (equipeEncontrada) {
+                inscricoes.copa = { ...equipeEncontrada, role: 'jogadora' };
+            }
+        }
+        
+        // 3. VERIFICA SE ESTÁ INSCRITA COMO AVULSA NA COPA
+        const jogadorasAvulsasFile = path.join(dataDir, `copa-${copaAberta.id}-avulsas.json`);
+        const jogadorasAvulsas = await readJsonFile(jogadorasAvulsasFile);
+        const inscricaoAvulsa = jogadorasAvulsas.find(j => j.email === email);
+        if (inscricaoAvulsa) {
+            inscricoes.copaAvulsa = { ...inscricaoAvulsa, nomeCopa: copaAberta.nome };
+        }
+    }
+
+    // --- Lógica para Encontro ---
+    const encontros = await readJsonFile(path.join(dataDir, 'encontros.json'));
+    const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
+    if (encontroAberto) {
+        const inscricoesFile = path.join(dataDir, `encontro-${encontroAberto.id}-inscricoes.json`);
+        const inscricoesEncontro = await readJsonFile(inscricoesFile);
+        const inscricaoUsuario = inscricoesEncontro.find(i => i.email === email);
+        if(inscricaoUsuario) inscricoes.encontro = { ...inscricaoUsuario, nomeEncontro: encontroAberto.nome };
+    }
+
+    res.json(inscricoes);
+});
+
+// ROTA PARA DELETAR UMA INSCRIÇÃO DE TIME DE UMA COPA (pelo email do responsável)
+app.delete('/api/inscricao-copa/:email', async (req, res) => {
+    const { email } = req.params;
+    const copas = await readJsonFile(path.join(dataDir, 'copas.json'));
+    const copaAberta = copas.find(copa => copa.status === 'aberta');
+    if (!copaAberta) return res.status(404).json({ error: 'Nenhuma copa aberta encontrada.' });
+
+    const equipesFile = path.join(dataDir, `copa-${copaAberta.id}-equipes.json`);
+    const equipes = await readJsonFile(equipesFile);
+    
+    const equipesAtualizadas = equipes.filter(e => e.email !== email);
+
+    await writeJsonFile(equipesFile, equipesAtualizadas);
+    res.json({ success: 'Inscrição da equipe cancelada com sucesso.' });
+});
+
+// ROTA PARA DELETAR UMA INSCRIÇÃO DE UM ENCONTRO
+app.delete('/api/inscricao-encontro/:email', async (req, res) => {
+    const { email } = req.params;
+    const encontros = await readJsonFile(path.join(dataDir, 'encontros.json'));
+    const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
+    if (!encontroAberto) return res.status(404).json({ error: 'Nenhum encontro aberto encontrado.' });
+
+    const inscricoesFile = path.join(dataDir, `encontro-${encontroAberto.id}-inscricoes.json`);
+    const inscricoes = await readJsonFile(inscricoesFile);
+
+    const inscricoesAtualizadas = inscricoes.filter(i => i.email !== email);
+    
+    await writeJsonFile(inscricoesFile, inscricoesAtualizadas);
+    res.json({ success: 'Inscrição no encontro cancelada com sucesso.' });
+});
+
+// NOVA ROTA PARA JOGADORA INDIVIDUAL CANCELAR PARTICIPAÇÃO EM TIME
+app.delete('/api/equipes/:timeId/jogadora/:cpf', async (req, res) => {
+    const { timeId, cpf } = req.params;
+
+    const copas = await readJsonFile(path.join(dataDir, 'copas.json'));
+    const copaAberta = copas.find(copa => copa.status === 'aberta');
+    if (!copaAberta) return res.status(404).json({ error: 'Nenhuma copa aberta.' });
+
+    const equipesFile = path.join(dataDir, `copa-${copaAberta.id}-equipes.json`);
+    let equipes = await readJsonFile(equipesFile);
+
+    const indexEquipe = equipes.findIndex(e => e.id === parseInt(timeId));
+    if (indexEquipe === -1) return res.status(404).json({ error: 'Equipe não encontrada.' });
+    
+    const jogadorasAntes = equipes[indexEquipe].jogadoras.length;
+    equipes[indexEquipe].jogadoras = equipes[indexEquipe].jogadoras.filter(j => j.cpf !== cpf);
+    const jogadorasDepois = equipes[indexEquipe].jogadoras.length;
+
+    if (jogadorasAntes === jogadorasDepois) {
+        return res.status(404).json({ error: 'Jogadora com este CPF não encontrada no time.' });
+    }
+
+    await writeJsonFile(equipesFile, equipes);
+    res.json({ success: 'Sua participação foi cancelada com sucesso.' });
+});
+
+// ROTA PARA CANCELAR INSCRIÇÃO AVULSA NA COPA
+app.delete('/api/inscricao-jogadora/:email', async (req, res) => {
+    const { email } = req.params;
+    const copas = await readJsonFile(path.join(dataDir, 'copas.json'));
+    const copaAberta = copas.find(copa => copa.status === 'aberta');
+    if (!copaAberta) return res.status(404).json({ error: 'Nenhuma copa aberta encontrada.' });
+
+    const avulsasFile = path.join(dataDir, `copa-${copaAberta.id}-avulsas.json`);
+    const jogadoras = await readJsonFile(avulsasFile);
+
+    const jogadorasAtualizadas = jogadoras.filter(j => j.email !== email);
+    
+    await writeJsonFile(avulsasFile, jogadorasAtualizadas);
+    res.json({ success: 'Inscrição avulsa na copa cancelada com sucesso.' });
+});
+
 
 // --- Inicia o servidor ---
 app.listen(PORT, () => {
