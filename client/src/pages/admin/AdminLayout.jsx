@@ -14,6 +14,7 @@ function AdminLayout() {
         </div>
         <nav className="flex-1 p-4 space-y-2">
           <Link to="/admin/copas" className="block py-2 px-4 rounded hover:bg-gray-700">Gerenciar Copas</Link>
+          <Link to="/admin/encontros" className="block py-2 px-4 rounded hover:bg-gray-700">Gerenciar Encontros</Link>
           <Link to="/admin/noticias" className="block py-2 px-4 rounded hover:bg-gray-700">Gerenciar Notícias</Link>
           <Link to="/admin/inscricoes" className="block py-2 px-4 rounded hover:bg-gray-700">Ver Inscrições</Link>
         </nav>

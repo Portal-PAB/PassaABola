@@ -16,7 +16,7 @@ function NoticiaDetalhe() {
     return <div className="text-center p-10">Carregando notícia...</div>;
   }
 
-  const paragrafos = noticia.conteudo ? noticia.conteudo.split('\n\n') : [];
+  const paragrafos = noticia.conteudo ? noticia.conteudo.split('\n') : [];
 
   const primeiraImagem = noticia.imagens && noticia.imagens.length > 0 ? noticia.imagens[0] : null;
   const restoDasImagens = noticia.imagens && noticia.imagens.length > 1 ? noticia.imagens.slice(1) : [];

@@ -19,6 +19,7 @@ import CopaPAB from './pages/CopaPAB';
 import EscolhaInscricao from './pages/EscolhaInscricao';
 import InscricaoCopa from './pages/InscricaoCopa';
 import InscricaoJogadora from './pages/InscricaoJogadora';
+import EncontroPAB from './pages/EncontroPAB';
 
 // Páginas de Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -27,6 +28,8 @@ import VerInscricoes from './pages/admin/VerInscricoes';
 import AdicionarNoticia from './pages/admin/AdicionarNoticia';
 import EditarNoticia from './pages/admin/EditarNoticia';
 import GerenciarCopas from './pages/admin/GerenciarCopas';
+import GerenciarEncontros from './pages/admin/GerenciarEncontros';
+import VerInscritosEncontro from './pages/admin/VerInscritosEncontro';
 
 import './App.css'; 
 
@@ -38,6 +41,7 @@ function App() {
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/login" element={<Login />} />
           <Route path="/perfil" element={<Perfil />} />
+          <Route path="/encontro-pab" element={<EncontroPAB />} />
           <Route path="/noticias" element={<Noticias />} />
           <Route path="/noticias/:id" element={<NoticiaDetalhe />} />
           <Route path="/jogos" element={<Jogos />} />
@@ -55,6 +59,8 @@ function App() {
           <Route path="noticias/editar/:id" element={<EditarNoticia />} />
           <Route path="copas" element={<GerenciarCopas />} />
           <Route path="inscricoes" element={<VerInscricoes />} />
+          <Route path="encontros" element={<GerenciarEncontros />} />
+          <Route path="encontros/:id/inscritos" element={<VerInscritosEncontro />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -30,6 +30,7 @@ function Header() {
             <li><Link to="/jogos">Jogos</Link></li>
             <li><a href="#">História</a></li>
             <li><Link to="/copa-pab">Copa PAB</Link></li>
+            <li><Link to="/encontro-pab">Encontro PAB</Link></li>
             <li><a href="#">Sobre</a></li>
           </ul>
         </nav>

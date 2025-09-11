@@ -15,7 +15,7 @@ const dataDir = path.join(__dirname, 'data');
 app.use(cors());
 app.use(express.json());
 
-// --- Funções para ler/escrever arquivos JSON ---
+// --- Funções Auxiliares para ler/escrever arquivos JSON ---
 const readJsonFile = async (filePath) => {
   try {
     const data = await fs.readFile(filePath, 'utf8');
@@ -95,6 +95,43 @@ app.get('/api/copas', async (req, res) => {
 });
 
 
+// --- Rotas de Gerenciamento de Encontros ---
+app.post('/api/encontros', async (req, res) => {
+  const { nome, data, local, limiteInscritos } = req.body;
+  const dbEncontrosPath = path.join(dataDir, 'encontros.json');
+  if (!nome || !data || !local || !limiteInscritos) return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+
+  let encontros = await readJsonFile(dbEncontrosPath);
+  encontros = encontros.map(encontro => ({ ...encontro, status: 'fechada' }));
+  
+  const novoEncontro = { id: Date.now(), nome, data, local, limiteInscritos: parseInt(limiteInscritos), status: 'aberta' };
+  encontros.push(novoEncontro);
+
+  await writeJsonFile(dbEncontrosPath, encontros);
+  res.status(201).json({ success: 'Encontro criado e aberto para inscrições!', encontro: novoEncontro });
+});
+
+app.get('/api/encontros/aberto', async (req, res) => {
+    const dbEncontrosPath = path.join(dataDir, 'encontros.json');
+    const encontros = await readJsonFile(dbEncontrosPath);
+    const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
+    res.json(encontroAberto || null);
+});
+
+app.get('/api/encontros', async (req, res) => {
+    const dbEncontrosPath = path.join(dataDir, 'encontros.json');
+    const encontros = await readJsonFile(dbEncontrosPath);
+    res.json(encontros);
+});
+
+app.get('/api/encontros/:id/inscritos', async (req, res) => {
+    const encontroId = req.params.id;
+    const dbInscricoesPath = path.join(dataDir, `encontro-${encontroId}-inscricoes.json`);
+    const inscricoes = await readJsonFile(dbInscricoesPath);
+    res.json(inscricoes);
+});
+
+
 // --- Rotas de Inscrição ---
 app.post('/inscricao-copa', async (req, res) => {
     const copas = await readJsonFile(path.join(dataDir, 'copas.json'));
@@ -128,8 +165,81 @@ app.post('/inscricao-jogadora', async (req, res) => {
     res.status(201).json({ success: 'Inscrição realizada com sucesso!' });
 });
 
+// --- ROTAS DE GERENCIAMENTO DE ENCONTROS ---
 
-// --- Rotas de Admin para Visualizar Inscrições ---
+app.post('/api/encontros', async (req, res) => {
+  const { nome, data, local, limiteInscritos } = req.body;
+  const dbEncontrosPath = path.join(dataDir, 'encontros.json');
+  if (!nome || !data || !local || !limiteInscritos) return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
+
+  let encontros = await readJsonFile(dbEncontrosPath);
+  // Garante que apenas um encontro pode estar aberto por vez
+  encontros = encontros.map(encontro => ({ ...encontro, status: 'fechado' }));
+  
+  const novoEncontro = { id: Date.now(), nome, data, local, limiteInscritos: parseInt(limiteInscritos), status: 'aberta' };
+  encontros.push(novoEncontro);
+
+  await writeJsonFile(dbEncontrosPath, encontros);
+  res.status(201).json({ success: 'Encontro criado e aberto para inscrições!', encontro: novoEncontro });
+});
+
+app.get('/api/encontros/aberto', async (req, res) => {
+    const dbEncontrosPath = path.join(dataDir, 'encontros.json');
+    const encontros = await readJsonFile(dbEncontrosPath);
+    const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
+    res.json(encontroAberto || null);
+});
+
+app.get('/api/encontros', async (req, res) => {
+    const dbEncontrosPath = path.join(dataDir, 'encontros.json');
+    const encontros = await readJsonFile(dbEncontrosPath);
+    res.json(encontros);
+});
+
+
+// --- ROTA DE INSCRIÇÃO PARA ENCONTRO ---
+app.post('/inscricao-encontro', async (req, res) => {
+    const encontros = await readJsonFile(path.join(dataDir, 'encontros.json'));
+    const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
+    if (!encontroAberto) return res.status(403).json({ error: 'Nenhum encontro aberto para inscrições.' });
+
+    const { user } = req.body; // Recebe os dados do usuário logado
+    if (!user) return res.status(400).json({ error: 'Usuário não identificado.' });
+
+    const dbInscricoesPath = path.join(dataDir, `encontro-${encontroAberto.id}-inscricoes.json`);
+    const inscricoes = await readJsonFile(dbInscricoesPath);
+
+    // Verifica o limite de inscritos
+    if (inscricoes.length >= encontroAberto.limiteInscritos) {
+        return res.status(403).json({ error: 'Inscrições esgotadas para este encontro.' });
+    }
+
+    // Verifica se o usuário já está inscrito
+    if (inscricoes.find(insc => insc.email === user.email)) {
+        return res.status(409).json({ error: 'Você já está inscrito neste encontro.' });
+    }
+
+    const novaInscricao = { id: Date.now(), nome: user.name, email: user.email, data_inscricao: new Date().toISOString() };
+    inscricoes.push(novaInscricao);
+    await writeJsonFile(dbInscricoesPath, inscricoes);
+
+    res.status(201).json({ success: 'Inscrição no encontro realizada com sucesso!' });
+});
+
+
+// ROTA PARA BUSCAR OS INSCRITOS DE UM ENCONTRO
+app.get('/api/encontros/aberto/inscricoes', async (req, res) => {
+    const encontros = await readJsonFile(path.join(dataDir, 'encontros.json'));
+    const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
+    if (!encontroAberto) return res.json([]); // Retorna vazio se não há encontro
+
+    const dbInscricoesPath = path.join(dataDir, `encontro-${encontroAberto.id}-inscricoes.json`);
+    const inscricoes = await readJsonFile(dbInscricoesPath);
+    res.json(inscricoes);
+});
+
+
+// --- Rotas de Admin para Visualizar Inscrições de Copa ---
 const getOpenCupFiles = async () => {
     const copas = await readJsonFile(path.join(dataDir, 'copas.json'));
     const copaAberta = copas.find(copa => copa.status === 'aberta');
@@ -176,7 +286,8 @@ app.post('/api/equipes/:id/adicionar-jogadora', async (req, res) => {
     res.json({ success: 'Jogadora adicionada com sucesso!' });
 });
 
-// --- ROTAS DE GERENCIAMENTO DE NOTÍCIAS ---
+
+// --- Rotas de Gerenciamento de Notícias ---
 const dbNoticiasPath = path.join(__dirname, '..', 'client', 'src', 'data', 'mockNoticias.json');
 
 app.get('/api/noticias', async (req, res) => {
@@ -209,17 +320,8 @@ app.post('/api/noticias', async (req, res) => {
     if (!titulo || !conteudo || !resumo) {
       return res.status(400).json({ error: 'Título, resumo e conteúdo são obrigatórios.' });
     }
-
     const noticias = await readJsonFile(dbNoticiasPath);
-    const novaNoticia = {
-      id: Date.now(),
-      titulo,
-      imagens: imagens || [],
-      destaque: destaque || false,
-      resumo,
-      conteudo,
-    };
-
+    const novaNoticia = { id: Date.now(), titulo, imagens: imagens || [], destaque: destaque || false, resumo, conteudo };
     noticias.unshift(novaNoticia);
     await writeJsonFile(dbNoticiasPath, noticias);
     res.status(201).json({ success: 'Notícia adicionada com sucesso!', noticia: novaNoticia });
@@ -235,11 +337,7 @@ app.put('/api/noticias/:id', async (req, res) => {
     const noticiaAtualizada = req.body;
     let noticias = await readJsonFile(dbNoticiasPath);
     const index = noticias.findIndex(n => n.id === noticiaId);
-
-    if (index === -1) {
-      return res.status(404).json({ error: 'Notícia não encontrada para atualizar.' });
-    }
-
+    if (index === -1) return res.status(404).json({ error: 'Notícia não encontrada para atualizar.' });
     noticias[index] = { ...noticiaAtualizada, id: noticiaId };
     await writeJsonFile(dbNoticiasPath, noticias);
     res.json({ success: 'Notícia atualizada com sucesso!', noticia: noticias[index] });
@@ -253,11 +351,7 @@ app.patch('/api/noticias/:id/toggle-destaque', async (req, res) => {
     const noticiaId = parseInt(req.params.id);
     let noticias = await readJsonFile(dbNoticiasPath);
     const index = noticias.findIndex(n => n.id === noticiaId);
-
-    if (index === -1) {
-      return res.status(404).json({ error: 'Notícia não encontrada.' });
-    }
-
+    if (index === -1) return res.status(404).json({ error: 'Notícia não encontrada.' });
     noticias[index].destaque = !noticias[index].destaque;
     await writeJsonFile(dbNoticiasPath, noticias);
     res.json({ success: 'Status de destaque alterado!', noticia: noticias[index] });
@@ -265,6 +359,7 @@ app.patch('/api/noticias/:id/toggle-destaque', async (req, res) => {
     res.status(500).json({ error: 'Erro ao salvar a alteração.' });
   }
 });
+
 
 // --- Rotas da API-Football ---
 const apiConfig = {
@@ -295,7 +390,6 @@ app.get('/api/tabela', async (req, res) => {
     if (!response.data.response || response.data.response.length === 0) {
       return res.json([]);
     }
-
     const tabelaFormatada = response.data.response[0].league.standings[0].map(item => ({
       pos: item.rank,
       time: { nome: item.team.name, logo: item.team.logo },
@@ -319,7 +413,6 @@ app.get('/api/partidas', async (req, res) => {
     if (!response.data.response || response.data.response.length === 0) {
       return res.json([]);
     }
-
     const partidasFormatadas = response.data.response.map(partida => ({
       id: partida.fixture.id,
       campeonato: partida.league.name,
@@ -345,7 +438,6 @@ app.get('/api/artilharia', async (req, res) => {
     if (!response.data.response || response.data.response.length === 0) {
       return res.json([]);
     }
-
     const artilhariaFormatada = response.data.response.map(jogador => ({
       id: jogador.player.id,
       jogadora: jogador.player.name,
