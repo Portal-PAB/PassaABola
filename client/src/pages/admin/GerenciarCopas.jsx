@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; // 1. Importação que estava faltando
 
 function GerenciarCopas() {
   const [nome, setNome] = useState('');
@@ -8,10 +9,14 @@ function GerenciarCopas() {
   const [mensagem, setMensagem] = useState('');
   const [copas, setCopas] = useState([]);
 
-  useEffect(() => {
+  const fetchData = () => {
     fetch('http://localhost:3001/api/copas')
       .then(res => res.json())
       .then(data => setCopas(data));
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   const handleSubmit = async (event) => {
@@ -27,7 +32,7 @@ function GerenciarCopas() {
       if (response.ok) {
         setMensagem({ type: 'success', text: result.success });
         setNome(''); setData(''); setLocal(''); setLimiteEquipes(16);
-        fetch('http://localhost:3001/api/copas').then(res => res.json()).then(data => setCopas(data));
+        fetchData(); // Recarrega a lista de copas
       } else {
         setMensagem({ type: 'error', text: result.error });
       }
@@ -43,6 +48,7 @@ function GerenciarCopas() {
       <div className="bg-white p-6 rounded-lg shadow mb-8">
         <h2 className="text-2xl font-semibold mb-4">Criar Nova Copa</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* O formulário continua o mesmo */}
           <div>
             <label htmlFor="nome" className="block text-sm font-medium text-gray-700">Nome da Copa</label>
             <input type="text" id="nome" value={nome} onChange={e => setNome(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" required />
@@ -77,9 +83,15 @@ function GerenciarCopas() {
                         <p className="font-bold">{copa.nome}</p>
                         <p className="text-sm text-gray-500">{new Date(copa.data).toLocaleDateString('pt-BR')} - {copa.local}</p>
                     </div>
-                    <span className={`px-3 py-1 text-sm rounded-full text-white ${copa.status === 'aberta' ? 'bg-green-500' : 'bg-gray-400'}`}>
-                        {copa.status}
-                    </span>
+                    <div className="flex items-center gap-4">
+                        {/* 2. Link corrigido para /copas/ e usando copa.id */}
+                        <Link to={`/admin/copas/${copa.id}/inscritos`} className="text-sm text-purple-600 hover:underline">
+                            Ver Inscritos
+                        </Link>
+                        <span className={`px-3 py-1 text-sm rounded-full text-white ${copa.status === 'aberta' ? 'bg-green-500' : 'bg-gray-400'}`}>
+                            {copa.status}
+                        </span>
+                    </div>
                 </li>
             ))}
         </ul>

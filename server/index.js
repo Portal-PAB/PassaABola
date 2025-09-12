@@ -5,17 +5,18 @@ const path = require('path');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
+const NodeCache = require('node-cache');
 
 const app = express();
 const PORT = 3001;
 const saltRounds = 10;
+const cache = new NodeCache({ stdTTL: 7200 });
 
 const dataDir = path.join(__dirname, 'data');
 
 app.use(cors());
 app.use(express.json());
 
-// --- Funções Auxiliares para ler/escrever arquivos JSON ---
 const readJsonFile = async (filePath) => {
   try {
     const data = await fs.readFile(filePath, 'utf8');
@@ -34,15 +35,19 @@ const writeJsonFile = (filePath, data) => {
 
 // --- Rotas de Autenticação ---
 app.post('/cadastro', async (req, res) => {
-  const { nome, email, senha, cpf } = req.body; // 1. Adicione 'cpf' aqui
+  const { nome, email, senha, cpf } = req.body;
   const dbPath = path.join(dataDir, 'contas.json');
   if (!nome || !email || !senha || !cpf) return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
   
+  const cpfLimpo = cpf.replace(/[^\d]/g, '');
   const contas = await readJsonFile(dbPath);
-  if (contas.find(conta => conta.email === email || conta.cpf === cpf)) return res.status(400).json({ error: 'Este email ou CPF já está em uso.' });
+
+  if (contas.find(conta => conta.email === email || conta.cpf === cpfLimpo)) {
+    return res.status(400).json({ error: 'Este email ou CPF já está em uso.' });
+  }
 
   const hash = await bcrypt.hash(senha, saltRounds);
-  contas.push({ nome, email, cpf, senhaHash: hash });
+  contas.push({ nome, email, cpf: cpfLimpo, senhaHash: hash });
   await writeJsonFile(dbPath, contas);
   res.status(201).json({ success: 'Conta criada com sucesso!' });
 });
@@ -139,9 +144,15 @@ app.post('/inscricao-copa', async (req, res) => {
     if (!copaAberta) return res.status(403).json({ error: 'Nenhuma copa aberta para inscrições no momento.' });
 
     const { nomeTime, responsavel, cpf, email, telefone, jogadoras } = req.body;
+
+    const jogadorasLimpas = jogadoras.map(j => ({
+        nome: j.nome,
+        cpf: j.cpf.replace(/[^\d]/g, '')
+    }));
+
     const dbEquipesPath = path.join(dataDir, `copa-${copaAberta.id}-equipes.json`);
 
-    const novaEquipe = { id: Date.now(), nomeTime, responsavel, cpf, email, telefone, jogadoras, data_inscricao: new Date().toISOString() };
+    const novaEquipe = { id: Date.now(), nomeTime, responsavel, cpf: cpf.replace(/[^\d]/g, ''), email, telefone, jogadoras: jogadorasLimpas, data_inscricao: new Date().toISOString() };
     const equipes = await readJsonFile(dbEquipesPath);
     equipes.push(novaEquipe);
     await writeJsonFile(dbEquipesPath, equipes);
@@ -155,14 +166,39 @@ app.post('/inscricao-jogadora', async (req, res) => {
     if (!copaAberta) return res.status(403).json({ error: 'Nenhuma copa aberta para inscrições no momento.' });
 
     const { nome, cpf, email, telefone } = req.body;
+
+    const cpfLimpo = cpf.replace(/[^\d]/g, '');
+
     const dbJogadorasPath = path.join(dataDir, `copa-${copaAberta.id}-avulsas.json`);
 
-    const novaJogadora = { id: Date.now(), nome, cpf, email, telefone, data_inscricao: new Date().toISOString() };
+    const novaJogadora = { 
+        id: Date.now(), 
+        nome, 
+        cpf: cpfLimpo,
+        email, 
+        telefone, 
+        data_inscricao: new Date().toISOString() 
+    };
     const jogadoras = await readJsonFile(dbJogadorasPath);
     jogadoras.push(novaJogadora);
     await writeJsonFile(dbJogadorasPath, jogadoras);
 
     res.status(201).json({ success: 'Inscrição realizada com sucesso!' });
+});
+
+// ROTA PARA BUSCAR INSCRITOS DE UMA COPA ESPECÍFICA
+app.get('/api/copas/:id/inscritos', async (req, res) => {
+    const { id } = req.params;
+
+    const equipesFile = path.join(dataDir, `copa-${id}-equipes.json`);
+    const avulsasFile = path.join(dataDir, `copa-${id}-avulsas.json`);
+
+    const [equipes, jogadorasAvulsas] = await Promise.all([
+        readJsonFile(equipesFile),
+        readJsonFile(avulsasFile)
+    ]);
+
+    res.json({ equipes, jogadorasAvulsas });
 });
 
 // --- ROTA DE INSCRIÇÃO PARA ENCONTRO ---
@@ -204,19 +240,16 @@ app.post('/inscricao-encontro', async (req, res) => {
     res.status(201).json({ success: 'Inscrição no encontro realizada com sucesso!' });
 });
 
-
-
 // ROTA PARA BUSCAR OS INSCRITOS DE UM ENCONTRO
 app.get('/api/encontros/aberto/inscricoes', async (req, res) => {
     const encontros = await readJsonFile(path.join(dataDir, 'encontros.json'));
     const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
-    if (!encontroAberto) return res.json([]); // Retorna vazio se não há encontro
+    if (!encontroAberto) return res.json([]);
 
     const dbInscricoesPath = path.join(dataDir, `encontro-${encontroAberto.id}-inscricoes.json`);
     const inscricoes = await readJsonFile(dbInscricoesPath);
     res.json(inscricoes);
 });
-
 
 // --- Rotas de Admin para Visualizar Inscrições de Copa ---
 const getOpenCupFiles = async () => {
@@ -347,12 +380,29 @@ const apiConfig = {
   }
 };
 
+// Cache simples em memória (2h)
+const setCache = (key, data) => {
+  cache[key] = { data, expiry: Date.now() + 1000 * 60 * 120 }; // 2h
+};
+const getCache = (key) => {
+  const cached = cache[key];
+  if (cached && cached.expiry > Date.now()) {
+    return cached.data;
+  }
+  return null;
+};
+
 app.get('/api/ligas', async (req, res) => {
+  const cacheKey = 'ligas';
+  const cachedData = getCache(cacheKey);
+  if (cachedData) return res.json(cachedData);
+
   try {
     const response = await axios.get('https://v3.football.api-sports.io/leagues', {
       params: { country: 'Brazil' },
       headers: apiConfig.headers
     });
+    setCache(cacheKey, response.data.response);
     res.json(response.data.response);
   } catch (error) {
     console.error(error);
@@ -361,6 +411,10 @@ app.get('/api/ligas', async (req, res) => {
 });
 
 app.get('/api/tabela', async (req, res) => {
+  const cacheKey = 'tabela';
+  const cachedData = getCache(cacheKey);
+  if (cachedData) return res.json(cachedData);
+
   try {
     const response = await axios.get('https://v3.football.api-sports.io/standings', {
       params: { league: '74', season: '2023' }, 
@@ -376,6 +430,7 @@ app.get('/api/tabela', async (req, res) => {
       E: item.all.draw, D: item.all.lose, GP: item.all.goals.for,
       GC: item.all.goals.against, SG: item.goalsDiff
     }));
+    setCache(cacheKey, tabelaFormatada);
     res.json(tabelaFormatada);
   } catch (error) {
     console.error(error);
@@ -384,6 +439,10 @@ app.get('/api/tabela', async (req, res) => {
 });
 
 app.get('/api/partidas', async (req, res) => {
+  const cacheKey = 'partidas';
+  const cachedData = getCache(cacheKey);
+  if (cachedData) return res.json(cachedData);
+
   try {
     const response = await axios.get('https://v3.football.api-sports.io/fixtures', {
       params: { league: '74', season: '2023' },
@@ -401,6 +460,7 @@ app.get('/api/partidas', async (req, res) => {
       hora: new Date(partida.fixture.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
       status: partida.fixture.status.short
     }));
+    setCache(cacheKey, partidasFormatadas);
     res.json(partidasFormatadas);
   } catch (error) {
     console.error(error);
@@ -409,6 +469,10 @@ app.get('/api/partidas', async (req, res) => {
 });
 
 app.get('/api/artilharia', async (req, res) => {
+  const cacheKey = 'artilharia';
+  const cachedData = getCache(cacheKey);
+  if (cachedData) return res.json(cachedData);
+
   try {
     const response = await axios.get('https://v3.football.api-sports.io/players/topscorers', {
       params: { league: '74', season: '2023' },
@@ -424,6 +488,7 @@ app.get('/api/artilharia', async (req, res) => {
       logo: jogador.statistics[0].team.logo,
       gols: jogador.statistics[0].goals.total
     }));
+    setCache(cacheKey, artilhariaFormatada);
     res.json(artilhariaFormatada);
   } catch (error) {
     console.error(error);
@@ -431,8 +496,58 @@ app.get('/api/artilharia', async (req, res) => {
   }
 });
 
+// ROTA PARA BUSCAR TODOS OS TIMES DE UMA LIGA
+app.get('/api/ligas/:leagueId/times', async (req, res) => {
+  const { leagueId } = req.params;
+  const cacheKey = `ligas-${leagueId}-times`;
+  const cachedData = getCache(cacheKey);
+  if (cachedData) return res.json(cachedData);
 
-// ... (após as rotas existentes)
+  const options = {
+    method: 'GET',
+    url: 'https://v3.football.api-sports.io/teams',
+    params: { league: leagueId, season: '2023' },
+    headers: apiConfig.headers
+  };
+  try {
+    const response = await axios.request(options);
+    setCache(cacheKey, response.data.response);
+    res.json(response.data.response);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar times da liga.' });
+  }
+});
+
+// ROTA PARA BUSCAR PARTIDAS DE UM TIME ESPECÍFICO
+app.get('/api/times/:timeId/partidas', async (req, res) => {
+  const { timeId } = req.params;
+  const cacheKey = `time-${timeId}-partidas`;
+  const cachedData = getCache(cacheKey);
+  if (cachedData) return res.json(cachedData);
+
+  const options = {
+    method: 'GET',
+    url: 'https://v3.football.api-sports.io/fixtures',
+    params: { team: timeId, season: '2023' },
+    headers: apiConfig.headers
+  };
+  try {
+    const response = await axios.request(options);
+    const partidasFormatadas = response.data.response.map(partida => ({
+      id: partida.fixture.id,
+      campeonato: partida.league.name,
+      timeCasa: { nome: partida.teams.home.name, logo: partida.teams.home.logo },
+      timeFora: { nome: partida.teams.away.name, logo: partida.teams.away.logo },
+      data: new Date(partida.fixture.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+      hora: new Date(partida.fixture.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+    }));
+    setCache(cacheKey, partidasFormatadas);
+    res.json(partidasFormatadas);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao buscar partidas do time.' });
+  }
+});
+
 
 // ROTA PARA BUSCAR DADOS COMPLETOS DE UM USUÁRIO (PARA O CONTEXTO)
 app.get('/api/usuario/:email', async (req, res) => {
@@ -441,7 +556,6 @@ app.get('/api/usuario/:email', async (req, res) => {
     const contas = await readJsonFile(dbPath);
     const conta = contas.find(c => c.email === userEmail);
     if (conta) {
-        // Não enviamos o hash da senha, por segurança
         const { senhaHash, ...userData } = conta;
         res.json(userData);
     } else {
@@ -468,72 +582,31 @@ app.post('/api/usuario/favoritar-time', async (req, res) => {
     res.json({ success: 'Time favorito salvo com sucesso!', user: updatedUser });
 });
 
-// ROTA PARA BUSCAR TODOS OS TIMES DE UMA LIGA
-app.get('/api/ligas/:leagueId/times', async (req, res) => {
-    const { leagueId } = req.params;
-    const options = {
-        method: 'GET',
-        url: 'https://v3.football.api-sports.io/teams',
-        params: { league: leagueId, season: '2023' },
-        headers: apiConfig.headers
-    };
-    try {
-        const response = await axios.request(options);
-        res.json(response.data.response);
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar times da liga.' });
-    }
-});
-
-// ROTA PARA BUSCAR PARTIDAS DE UM TIME ESPECÍFICO
-app.get('/api/times/:timeId/partidas', async (req, res) => {
-    const { timeId } = req.params;
-    const options = {
-        method: 'GET',
-        url: 'https://v3.football.api-sports.io/fixtures',
-        params: { team: timeId, season: '2023' }, // Próximas 5 partidas
-        headers: apiConfig.headers
-    };
-    try {
-        const response = await axios.request(options);
-        const partidasFormatadas = response.data.response.map(partida => ({
-            id: partida.fixture.id,
-            campeonato: partida.league.name,
-            timeCasa: { nome: partida.teams.home.name, logo: partida.teams.home.logo },
-            timeFora: { nome: partida.teams.away.name, logo: partida.teams.away.logo },
-            data: new Date(partida.fixture.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-            hora: new Date(partida.fixture.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        }));
-        res.json(partidasFormatadas);
-    } catch (error) {
-        res.status(500).json({ error: 'Erro ao buscar partidas do time.' });
-    }
-});
-
-
-// ROTA PARA BUSCAR TODAS AS INSCRIÇÕES DE UM USUÁRIO (VERSÃO ATUALIZADA)
+// ROTA PARA BUSCAR TODAS AS INSCRIÇÕES DE UM USUÁRIO
 app.get('/api/usuario/minhas-inscricoes/:email', async (req, res) => {
     const { email } = req.params;
-    let inscricoes = { copa: null, encontro: null, copaAvulsa: null }; // Adicionado copaAvulsa
+    let inscricoes = { copa: null, encontro: null, copaAvulsa: null };
 
     const contas = await readJsonFile(path.join(dataDir, 'contas.json'));
     const usuarioLogado = contas.find(c => c.email === email);
-    if (!usuarioLogado) return res.json(inscricoes);
-    const cpfUsuarioLogado = usuarioLogado.cpf;
+    if (!usuarioLogado || !usuarioLogado.cpf) return res.json(inscricoes);
+    
+    const cpfUsuarioLogado = usuarioLogado.cpf.replace(/[^\d]/g, '');
 
-    // --- Lógica para Copa (Time e Avulsa) ---
+    // --- Lógica para Copa ---
     const copas = await readJsonFile(path.join(dataDir, 'copas.json'));
     const copaAberta = copas.find(copa => copa.status === 'aberta');
     if (copaAberta) {
-        // 1. Verifica se é responsável por um time
         const equipesFile = path.join(dataDir, `copa-${copaAberta.id}-equipes.json`);
         const equipes = await readJsonFile(equipesFile);
+        
         let equipeEncontrada = equipes.find(e => e.email === email);
         if (equipeEncontrada) {
             inscricoes.copa = { ...equipeEncontrada, role: 'responsavel' };
         } else {
-            // 2. Se não, verifica se está como jogadora em um time
-            equipeEncontrada = equipes.find(e => e.jogadoras.some(j => j.cpf === cpfUsuarioLogado));
+            equipeEncontrada = equipes.find(e => 
+                e.jogadoras.some(j => j.cpf.replace(/[^\d]/g, '') === cpfUsuarioLogado)
+            );
             if (equipeEncontrada) {
                 inscricoes.copa = { ...equipeEncontrada, role: 'jogadora' };
             }
@@ -548,7 +621,7 @@ app.get('/api/usuario/minhas-inscricoes/:email', async (req, res) => {
         }
     }
 
-    // --- Lógica para Encontro ---
+    // Lógica para Encontro
     const encontros = await readJsonFile(path.join(dataDir, 'encontros.json'));
     const encontroAberto = encontros.find(encontro => encontro.status === 'aberta');
     if (encontroAberto) {
@@ -561,7 +634,7 @@ app.get('/api/usuario/minhas-inscricoes/:email', async (req, res) => {
     res.json(inscricoes);
 });
 
-// ROTA PARA DELETAR UMA INSCRIÇÃO DE TIME DE UMA COPA (pelo email do responsável)
+// ROTA PARA DELETAR UMA INSCRIÇÃO DE TIME DE UMA COPA
 app.delete('/api/inscricao-copa/:email', async (req, res) => {
     const { email } = req.params;
     const copas = await readJsonFile(path.join(dataDir, 'copas.json'));
@@ -593,7 +666,6 @@ app.delete('/api/inscricao-encontro/:email', async (req, res) => {
     res.json({ success: 'Inscrição no encontro cancelada com sucesso.' });
 });
 
-// NOVA ROTA PARA JOGADORA INDIVIDUAL CANCELAR PARTICIPAÇÃO EM TIME
 app.delete('/api/equipes/:timeId/jogadora/:cpf', async (req, res) => {
     const { timeId, cpf } = req.params;
 

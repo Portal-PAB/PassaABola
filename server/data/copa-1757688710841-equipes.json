@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1757688746092,
+    "nomeTime": "Real Madames",
+    "responsavel": "Opala",
+    "cpf": "12345678910",
+    "email": "teste1@gmail.com",
+    "telefone": "31971609421",
+    "jogadoras": [
+      {
+        "nome": "Opala",
+        "cpf": "12345678910"
+      }
+    ],
+    "data_inscricao": "2025-09-12T14:52:26.092Z"
+  }
+]

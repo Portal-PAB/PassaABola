@@ -30,6 +30,7 @@ import EditarNoticia from './pages/admin/EditarNoticia';
 import GerenciarCopas from './pages/admin/GerenciarCopas';
 import GerenciarEncontros from './pages/admin/GerenciarEncontros';
 import VerInscritosEncontro from './pages/admin/VerInscritosEncontro';
+import VerInscritosCopa from './pages/admin/VerInscritosCopa';
 
 import './App.css'; 
 
@@ -61,6 +62,7 @@ function App() {
           <Route path="inscricoes" element={<VerInscricoes />} />
           <Route path="encontros" element={<GerenciarEncontros />} />
           <Route path="encontros/:id/inscritos" element={<VerInscritosEncontro />} />
+          <Route path="copas/:id/inscritos" element={<VerInscritosCopa />} />
         </Route>
       </Routes>
     </BrowserRouter>

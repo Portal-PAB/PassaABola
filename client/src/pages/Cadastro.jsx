@@ -7,7 +7,7 @@ function Cadastro() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
-  const [cpf, setCpf] = useState(''); // Estado para o CPF
+  const [cpf, setCpf] = useState('');
   const [mensagem, setMensagem] = useState('');
   const navigate = useNavigate();
 
@@ -24,7 +24,7 @@ function Cadastro() {
       const response = await fetch('http://localhost:3001/cadastro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, senha, cpf }), // Envia o CPF
+        body: JSON.stringify({ nome, email, senha, cpf }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -48,7 +48,6 @@ function Cadastro() {
           <input id="nome" type="text" value={nome} onChange={(e) => setNome(e.target.value)} required />
         </div>
 
-        {/* --- CAMPO DE CPF ADICIONADO --- */}
         <div className="input-group-classic">
           <label htmlFor="cpf">CPF:</label>
           <input id="cpf" type="text" value={cpf} onChange={(e) => setCpf(e.target.value)} required />
@@ -68,8 +67,6 @@ function Cadastro() {
           <label htmlFor="confirmarSenha">Confirmar senha:</label>
           <input id="confirmarSenha" type="password" value={confirmarSenha} onChange={(e) => setConfirmarSenha(e.target.value)} required />
         </div>
-
-        {/* O checkbox de Termos foi removido do fluxo de cadastro principal, mas pode ser adicionado de volta se necessário */}
         
         <button type="submit" className="submit-button">Cadastrar</button>
 

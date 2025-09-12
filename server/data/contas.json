@@ -2,18 +2,14 @@
   {
     "nome": "Matheus Freitas Vieira",
     "email": "matheus.vf06@gmail.com",
-    "senhaHash": "$2b$10$auoUWgqQ4mk/3mmSy/AZPeKLWl.pKF3O9PSLtm5xT7nPqcrtLXf9C",
+    "cpf": "15077058679",
+    "senhaHash": "$2b$10$gd0FIFeY/345Bn58c1ieo.Qs02qqF1veGFYXwK8TnRPmqwNFwBBMa",
     "timeFavoritoId": "9980"
   },
   {
-    "nome": "Teste",
-    "email": "teste@gmail.com",
-    "senhaHash": "$2b$10$pr5Cj84NWHvHuJgySsQ4eO5VP5NpLjcuh92SFYQTCcScU2WsEU6pS"
-  },
-  {
-    "nome": "Teste2",
+    "nome": "Matheus Freitas Vieira",
     "email": "teste1@gmail.com",
-    "cpf": "123.456.789.10",
-    "senhaHash": "$2b$10$k6nArw8vgihzUufY8V7D/eBFK5gp59GJstNX/hxX03vlrbwhVmEz6"
+    "cpf": "12345678910",
+    "senhaHash": "$2b$10$WfQkx3vevbqT1Q3yo.OSHeDcPj8pSFwOv2AsCyb5SJ9h1rRI9GNS6"
   }
 ]
