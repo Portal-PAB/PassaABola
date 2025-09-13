@@ -9,6 +9,7 @@ import AdminLayout from './pages/admin/AdminLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Páginas Públicas
+import HomePage from './pages/HomePage';
 import Cadastro from './pages/Cadastro';
 import Login from './pages/Login';
 import Perfil from './pages/Perfil';
@@ -41,6 +42,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<PageLayout />}>
+          <Route path="/" element={<HomePage />} />
           <Route path="/cadastro" element={<Cadastro />} />
           <Route path="/login" element={<Login />} />
           <Route path="/perfil" element={<Perfil />} />
@@ -52,7 +54,6 @@ function App() {
           <Route path="/inscricao" element={<EscolhaInscricao />} />
           <Route path="/inscricao-time" element={<InscricaoCopa />} />
           <Route path="/inscricao-jogadora" element={<InscricaoJogadora />} />
-          <Route path="/" element={<Navigate to="/noticias" />} />
           <Route path="/historia" element={<Historia/>} />
         </Route>
 
