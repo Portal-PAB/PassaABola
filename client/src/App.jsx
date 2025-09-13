@@ -21,6 +21,7 @@ import InscricaoCopa from './pages/InscricaoCopa';
 import InscricaoJogadora from './pages/InscricaoJogadora';
 import EncontroPAB from './pages/EncontroPAB';
 import Historia from './pages/Historia';
+import Sobre from './pages/Sobre';
 
 // Páginas de Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -54,6 +55,7 @@ function App() {
           <Route path="/inscricao-jogadora" element={<InscricaoJogadora />} />
           <Route path="/" element={<Navigate to="/noticias" />} />
           <Route path="/historia" element={<Historia/>} />
+          <Route path="/sobre" element={<Sobre/>} />
         </Route>
 
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
