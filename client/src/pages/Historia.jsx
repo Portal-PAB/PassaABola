@@ -177,11 +177,11 @@ function Historia() {
       </section>
 
       <section className="container mx-auto py-10 px-6">
-        <h2 className="text-2xl font-bold text-purple-800 mb-6">
+        <h2 className="text-3xl font-bold text-[var(--roxo-principal)] mb-5">
           Conquistas e Desafios
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-lg  overflow-hidden">
+          <div className="rounded-lg  overflow-hidden transform transition duration-300 hover:scale-105 cursor-pointer">
             <div className="p-4">
               <img
                 src="https://lncimg.lance.com.br/cdn-cgi/image/width=850,quality=75,format=webp/uploads/2018/10/23/5bcf63711af7d.jpeg"
@@ -189,12 +189,12 @@ function Historia() {
                 className="rounded-3xl"
               />
               <p className=" text-[var(--cinza-texto)] font-bold mt-4">2025</p>
-              <p className="font-bold text-xl">
+              <p className="font-bold text-xl ">
                 Marta é eleita a melhor jogadora de todos os tempos
               </p>
             </div>
           </div>
-          <div className="rounded-lg  overflow-hidden">
+          <div className="rounded-lg  overflow-hidden transform transition duration-300 hover:scale-105 cursor-pointer">
             <div className="p-4">
               <img
                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSyJQtIjtprg632HYqG5MGAfjXA2pXbziORyQ&s"
@@ -207,7 +207,7 @@ function Historia() {
               </p>
             </div>
           </div>
-          <div className="rounded-lg  overflow-hidden">
+          <div className="rounded-lg  overflow-hidden transform transition duration-300 hover:scale-105 cursor-pointer">
             <div className="p-4">
               <img
                 src="https://s2-ge.glbimg.com/DIRxSEtTRC-DzMLZrWP26ksWDng=/0x0:3000x1984/984x0/smart/filters:strip_icc()/s.glbimg.com/es/ge/f/original/2017/07/10/pan_3.jpg"
