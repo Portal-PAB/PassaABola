@@ -15,7 +15,11 @@ function Header() {
   return (
     <header className="header">
       <div className="header-container">
-        <div className="icon-placeholder logo-icon"><img src={Logo} alt="Logo" className="logo-image" /></div>
+        <div className="icon-placeholder logo-icon">
+          <Link to="/">
+            <img src={Logo} alt="Logo" className="logo-image" />
+          </Link>
+        </div>
         
         <button 
           className="menu-hamburguer" 
