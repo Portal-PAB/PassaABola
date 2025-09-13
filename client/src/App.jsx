@@ -20,6 +20,7 @@ import EscolhaInscricao from './pages/EscolhaInscricao';
 import InscricaoCopa from './pages/InscricaoCopa';
 import InscricaoJogadora from './pages/InscricaoJogadora';
 import EncontroPAB from './pages/EncontroPAB';
+import Historia from './pages/Historia';
 
 // Páginas de Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -33,6 +34,7 @@ import VerInscritosEncontro from './pages/admin/VerInscritosEncontro';
 import VerInscritosCopa from './pages/admin/VerInscritosCopa';
 
 import './App.css'; 
+
 
 function App() {
   return (
@@ -51,6 +53,7 @@ function App() {
           <Route path="/inscricao-time" element={<InscricaoCopa />} />
           <Route path="/inscricao-jogadora" element={<InscricaoJogadora />} />
           <Route path="/" element={<Navigate to="/noticias" />} />
+          <Route path="/historia" element={<Historia/>} />
         </Route>
 
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
