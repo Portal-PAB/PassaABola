@@ -57,7 +57,6 @@ function HomePage() {
     carregarDadosHome();
   }, []);
 
-  // Função para o carrossel
   const handleScroll = (direcao) => {
     if (carrosselRef.current) {
       const cardWidth = carrosselRef.current.children[0].offsetWidth;

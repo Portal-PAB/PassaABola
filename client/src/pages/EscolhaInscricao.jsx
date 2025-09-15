@@ -28,7 +28,6 @@ function EscolhaInscricao() {
     <div className="bg-white min-h-full py-12 px-4">
       <div className="max-w-4xl mx-auto text-center">
         {copaAberta ? (
-          // Se existe uma copa aberta, mostra as opções de inscrição
           <>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
               Inscrições Abertas: {copaAberta.nome}
@@ -50,7 +49,6 @@ function EscolhaInscricao() {
             </div>
           </>
         ) : (
-          // Se NÃO existe copa aberta, mostra esta mensagem
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
               Inscrições Encerradas

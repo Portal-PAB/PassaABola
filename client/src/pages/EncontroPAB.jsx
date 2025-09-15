@@ -9,11 +9,9 @@ function EncontroPAB() {
   const [inscritos, setInscritos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensagem, setMensagem] = useState('');
-  
-  // Novo estado para controlar a exibição do formulário
+
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Estados para o formulário
   const [formNome, setFormNome] = useState('');
   const [formCpf, setFormCpf] = useState('');
   const [formEmail, setFormEmail] = useState('');
@@ -41,15 +39,14 @@ function EncontroPAB() {
     fetchData();
   }, []);
 
-  // Preenche o formulário com dados do usuário logado
   const handleStartRegistration = () => {
     if (!user) {
       navigate('/login');
       return;
     }
     setFormEmail(user.email || '');
-    setFormNome(user.name || ''); // Assumindo que o contexto possa ter o nome
-    setIsRegistering(true); // Mostra o formulário
+    setFormNome(user.name || '');
+    setIsRegistering(true);
   };
 
   const handleInscricao = async (event) => {
@@ -65,8 +62,8 @@ function EncontroPAB() {
         });
         const result = await response.json();
         if (response.ok) {
-            await fetchData(); // Atualiza a contagem de inscritos
-            setIsRegistering(false); // Volta para a tela de detalhes
+            await fetchData();
+            setIsRegistering(false);
         } else {
             setMensagem({ type: 'error', text: result.error });
         }
@@ -87,7 +84,6 @@ function EncontroPAB() {
       <div className="max-w-4xl mx-auto text-center">
         
         {isRegistering ? (
-          // --- VISUALIZAÇÃO DO FORMULÁRIO DE INSCRIÇÃO ---
           <div className="text-left max-w-xl mx-auto">
             <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
               Confirmar Inscrição para "{encontro.nome}"
@@ -121,7 +117,6 @@ function EncontroPAB() {
             </form>
           </div>
         ) : (
-          // --- VISUALIZAÇÃO DOS DETALHES DO ENCONTRO ---
           <div>
             {!encontro ? (
               <div>

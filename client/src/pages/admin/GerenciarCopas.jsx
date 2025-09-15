@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // 1. Importação que estava faltando
+import { Link } from 'react-router-dom';
 
 function GerenciarCopas() {
   const [nome, setNome] = useState('');
@@ -32,7 +32,7 @@ function GerenciarCopas() {
       if (response.ok) {
         setMensagem({ type: 'success', text: result.success });
         setNome(''); setData(''); setLocal(''); setLimiteEquipes(16);
-        fetchData(); // Recarrega a lista de copas
+        fetchData();
       } else {
         setMensagem({ type: 'error', text: result.error });
       }
@@ -84,7 +84,6 @@ function GerenciarCopas() {
                         <p className="text-sm text-gray-500">{new Date(copa.data).toLocaleDateString('pt-BR')} - {copa.local}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                        {/* 2. Link corrigido para /copas/ e usando copa.id */}
                         <Link to={`/admin/copas/${copa.id}/inscritos`} className="text-sm text-purple-600 hover:underline">
                             Ver Inscritos
                         </Link>

@@ -27,6 +27,20 @@ function VerInscritosEncontro() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Inscritos no Encontro</h1>
+        <div className="flex gap-4">
+          <button
+            onClick={() => window.open(`http://localhost:3001/api/encontros/${id}/inscritos/excel`, "_blank")}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Exportar Excel
+          </button>
+          <button
+            onClick={() => window.open(`http://localhost:3001/api/encontros/${id}/inscritos/pdf`, "_blank")}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            Exportar PDF
+          </button>
+        </div>
         <Link to="/admin/encontros" className="text-sm text-gray-600 hover:underline">&larr; Voltar</Link>
       </div>
       <div className="bg-white p-6 rounded-lg shadow">

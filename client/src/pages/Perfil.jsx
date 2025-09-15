@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
-// Componente para um card de partida
 const CardPartida = ({ partida }) => (
   <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex items-center text-center space-x-2">
     <div className="flex flex-col items-center w-1/3">

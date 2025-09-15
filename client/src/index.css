@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 :root {
-  /* Cores do Projeto */
   --roxo-principal: #420986;
   --roxo-escuro: #1A043A;
   --roxo-claro: #57209E;
@@ -9,7 +8,6 @@
   --cinza-texto: #8F8F8F;
   --cinza-borda: #D1D1D1;
 
-  /* Fonte Principal */
   font-family: 'Poppins', sans-serif;
 }
 

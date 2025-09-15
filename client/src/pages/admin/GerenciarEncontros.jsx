@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // <-- A LINHA QUE FALTAVA
+import { Link } from 'react-router-dom';
 
 function GerenciarEncontros() {
   const [nome, setNome] = useState('');
@@ -12,7 +12,7 @@ function GerenciarEncontros() {
   const fetchData = () => {
     fetch('http://localhost:3001/api/encontros')
       .then(res => res.json())
-      .then(data => setEncontros(data.sort((a, b) => b.id - a.id))); // Ordena aqui
+      .then(data => setEncontros(data.sort((a, b) => b.id - a.id)));
   };
 
   useEffect(() => {

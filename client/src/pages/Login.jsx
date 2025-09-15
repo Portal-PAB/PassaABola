@@ -15,7 +15,6 @@ function Login() {
     event.preventDefault();
     setMensagem('');
     try {
-      // 1. Primeiro, verifica se a senha está correta
       const loginResponse = await fetch('http://localhost:3001/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -27,14 +26,11 @@ function Login() {
         throw new Error(errorData.error || 'Senha incorreta.');
       }
 
-      // 2. Se a senha está correta, busca os dados completos do usuário
       const userResponse = await fetch(`http://localhost:3001/api/usuario/${email}`);
       const userData = await userResponse.json();
-      
-      // 3. Salva os dados completos no contexto global
+
       login(userData);
-      
-      // 4. Redireciona para o perfil
+
       navigate('/perfil');
 
     } catch (error) {

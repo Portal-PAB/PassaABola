@@ -38,9 +38,23 @@ function VerInscritosCopa() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Inscritos na Copa</h1>
+        <div className="flex gap-4">
+          <button
+            onClick={() => window.open(`http://localhost:3001/api/copas/${id}/inscritos/excel`, "_blank")}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Exportar Excel
+          </button>
+          <button
+            onClick={() => window.open(`http://localhost:3001/api/copas/${id}/inscritos/pdf`, "_blank")}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          >
+            Exportar PDF
+          </button>
+        </div>
         <Link to="/admin/copas" className="text-sm text-gray-600 hover:underline">&larr; Voltar para a lista de copas</Link>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         {/* Coluna de Jogadoras Avulsas (Apenas Visualização) */}
         <div className="space-y-4">
