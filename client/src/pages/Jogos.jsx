@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const CardPartida = ({ partida }) => (
     <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 flex flex-col items-center text-center space-y-2">
         <span className="text-xs text-gray-500">{partida.campeonato}</span>
@@ -33,9 +35,9 @@ function Jogos() {
             try {
                 setLoading(true);
                 const [resPartidas, resTabela, resArtilharia] = await Promise.all([
-                    fetch('http://localhost:3001/api/partidas'),
-                    fetch('http://localhost:3001/api/tabela'),
-                    fetch('http://localhost:3001/api/artilharia'),
+                    fetch(`${API_URL}/api/partidas`),
+                    fetch(`${API_URL}/api/tabela`),
+                    fetch(`${API_URL}/api/artilharia`),
                 ]);
 
                 if (!resPartidas.ok || !resTabela.ok || !resArtilharia.ok) {

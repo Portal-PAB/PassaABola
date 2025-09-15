@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
 const MAX_JOGADORAS = 15;
 
 function VerInscritosCopa() {
-  const { id } = useParams(); // Pega o ID da copa da URL
+  const { id } = useParams();
   const [equipes, setEquipes] = useState([]);
   const [jogadorasAvulsas, setJogadorasAvulsas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +15,7 @@ function VerInscritosCopa() {
     const fetchInscritos = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:3001/api/copas/${id}/inscritos`);
+        const response = await fetch(`${API_URL}/api/copas/${id}/inscritos`);
         if (!response.ok) {
           throw new Error('Falha ao buscar dados da copa.');
         }
@@ -40,13 +41,13 @@ function VerInscritosCopa() {
         <h1 className="text-3xl font-bold">Inscritos na Copa</h1>
         <div className="flex gap-4">
           <button
-            onClick={() => window.open(`http://localhost:3001/api/copas/${id}/inscritos/excel`, "_blank")}
+            onClick={() => window.open(`${API_URL}/api/copas/${id}/inscritos/excel`, "_blank")}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
           >
             Exportar Excel
           </button>
           <button
-            onClick={() => window.open(`http://localhost:3001/api/copas/${id}/inscritos/pdf`, "_blank")}
+            onClick={() => window.open(`${API_URL}/api/copas/${id}/inscritos/pdf`, "_blank")}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           >
             Exportar PDF
@@ -56,7 +57,6 @@ function VerInscritosCopa() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* Coluna de Jogadoras Avulsas (Apenas Visualização) */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Jogadoras Avulsas ({jogadorasAvulsas.length})</h2>
           {jogadorasAvulsas.length > 0 ? jogadorasAvulsas.map(jogadora => (
@@ -71,7 +71,6 @@ function VerInscritosCopa() {
           )) : <p className="text-gray-500 bg-white p-4 rounded-lg shadow">Nenhuma jogadora avulsa inscrita nesta copa.</p>}
         </div>
 
-        {/* Coluna de Equipes Inscritas (Apenas Visualização) */}
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold">Equipes Inscritas ({equipes.length})</h2>
           {equipes.length > 0 ? equipes.map(equipe => (

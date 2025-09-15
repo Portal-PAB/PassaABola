@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Login.css';
 
+// NOVO: Define a URL da API a partir da variável de ambiente
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -15,7 +18,8 @@ function Login() {
     event.preventDefault();
     setMensagem('');
     try {
-      const loginResponse = await fetch('http://localhost:3001/login', {
+      // ATUALIZADO: Usa a variável API_URL
+      const loginResponse = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, senha }),
@@ -26,7 +30,8 @@ function Login() {
         throw new Error(errorData.error || 'Senha incorreta.');
       }
 
-      const userResponse = await fetch(`http://localhost:3001/api/usuario/${email}`);
+      // ATUALIZADO: Usa a variável API_URL para buscar os dados do usuário após o login
+      const userResponse = await fetch(`${API_URL}/api/usuario/${email}`);
       const userData = await userResponse.json();
 
       login(userData);

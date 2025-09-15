@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function EncontroPAB() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -9,9 +11,7 @@ function EncontroPAB() {
   const [inscritos, setInscritos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensagem, setMensagem] = useState('');
-
   const [isRegistering, setIsRegistering] = useState(false);
-
   const [formNome, setFormNome] = useState('');
   const [formCpf, setFormCpf] = useState('');
   const [formEmail, setFormEmail] = useState('');
@@ -21,8 +21,8 @@ function EncontroPAB() {
     try {
       setLoading(true);
       const [resEncontro, resInscritos] = await Promise.all([
-        fetch('http://localhost:3001/api/encontros/aberto'),
-        fetch('http://localhost:3001/api/encontros/aberto/inscricoes')
+        fetch(`${API_URL}/api/encontros/aberto`),
+        fetch(`${API_URL}/api/encontros/aberto/inscricoes`)
       ]);
       const dataEncontro = await resEncontro.json();
       const dataInscritos = await resInscritos.json();
@@ -55,7 +55,7 @@ function EncontroPAB() {
     const inscricaoData = { nome: formNome, cpf: formCpf, email: formEmail, telefone: formTelefone };
     
     try {
-        const response = await fetch('http://localhost:3001/inscricao-encontro', {
+        const response = await fetch(`${API_URL}/inscricao-encontro`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(inscricaoData)

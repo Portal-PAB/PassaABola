@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function VerInscricoes() {
   const [equipes, setEquipes] = useState([]);
   const [jogadorasAvulsas, setJogadorasAvulsas] = useState([]);
@@ -13,8 +15,8 @@ function VerInscricoes() {
     try {
       setLoading(true);
       const [resEquipes, resJogadoras] = await Promise.all([
-        fetch('http://localhost:3001/api/equipes'),
-        fetch('http://localhost:3001/api/jogadoras-avulsas')
+        fetch(`${API_URL}/api/equipes`),
+        fetch(`${API_URL}/api/jogadoras-avulsas`)
       ]);
       const dadosEquipes = await resEquipes.json();
       const dadosJogadoras = await resJogadoras.json();
@@ -38,7 +40,7 @@ function VerInscricoes() {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:3001/api/equipes/${idDoTime}/adicionar-jogadora`, {
+      const response = await fetch(`${API_URL}/api/equipes/${idDoTime}/adicionar-jogadora`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jogadora)

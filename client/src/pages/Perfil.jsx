@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const CardPartida = ({ partida }) => (
   <div className="bg-white p-3 rounded-lg shadow-sm border border-gray-200 flex items-center text-center space-x-2">
     <div className="flex flex-col items-center w-1/3">
@@ -38,8 +40,8 @@ function Perfil() {
     setLoading(true);
     try {
         const [resInscricoes, resTimes] = await Promise.all([
-            fetch(`http://localhost:3001/api/usuario/minhas-inscricoes/${user.email}`),
-            fetch('http://localhost:3001/api/ligas/74/times')
+            fetch(`${API_URL}/api/usuario/minhas-inscricoes/${user.email}`),
+            fetch(`${API_URL}/api/ligas/74/times`)
         ]);
         const dadosInscricoes = await resInscricoes.json();
         const dadosTimes = await resTimes.json();
@@ -49,9 +51,9 @@ function Perfil() {
 
         if (user.timeFavoritoId) {
             const [resTabela, resPartidas, resArtilharia] = await Promise.all([
-                fetch('http://localhost:3001/api/tabela'),
-                fetch(`http://localhost:3001/api/times/${user.timeFavoritoId}/partidas`),
-                fetch('http://localhost:3001/api/artilharia')
+                fetch(`${API_URL}/api/tabela`),
+                fetch(`${API_URL}/api/times/${user.timeFavoritoId}/partidas`),
+                fetch(`${API_URL}/api/artilharia`)
             ]);
             const tabela = await resTabela.json();
             const partidas = await resPartidas.json();
@@ -72,7 +74,7 @@ function Perfil() {
   const handleSalvarTime = async () => {
     const idParaSalvar = timeSelecionado || null;
     try {
-        const response = await fetch('http://localhost:3001/api/usuario/favoritar-time', {
+        const response = await fetch(`${API_URL}/api/usuario/favoritar-time`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email: user.email, timeId: idParaSalvar })
@@ -89,7 +91,7 @@ function Perfil() {
   const handleCancelarCopa = async () => {
     if (window.confirm("Tem certeza que deseja cancelar a inscrição da sua equipe na copa? Esta ação não pode ser desfeita.")) {
       try {
-        const response = await fetch(`http://localhost:3001/api/inscricao-copa/${user.email}`, { method: 'DELETE' });
+        const response = await fetch(`${API_URL}/api/inscricao-copa/${user.email}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Falha ao cancelar no servidor.');
         fetchProfileData();
       } catch (error) {
@@ -102,7 +104,7 @@ function Perfil() {
   const handleCancelarEncontro = async () => {
     if (window.confirm("Tem certeza que deseja cancelar sua inscrição no encontro?")) {
       try {
-        const response = await fetch(`http://localhost:3001/api/inscricao-encontro/${user.email}`, { method: 'DELETE' });
+        const response = await fetch(`${API_URL}/api/inscricao-encontro/${user.email}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Falha ao cancelar no servidor.');
         fetchProfileData();
       } catch (error) {
@@ -115,7 +117,7 @@ function Perfil() {
   const handleCancelarParticipacao = async (timeId) => {
     if(window.confirm("Tem certeza que deseja cancelar sua participação nesta equipe?")){
         try {
-            const response = await fetch(`http://localhost:3001/api/equipes/${timeId}/jogadora/${user.cpf}`, { method: 'DELETE' });
+            const response = await fetch(`${API_URL}/api/equipes/${timeId}/jogadora/${user.cpf}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Falha ao cancelar participação.');
             fetchProfileData();
         } catch (error) {
@@ -128,7 +130,7 @@ function Perfil() {
   const handleCancelarCopaAvulsa = async () => {
     if (window.confirm("Tem certeza que deseja cancelar sua inscrição avulsa na copa?")) {
       try {
-        const response = await fetch(`http://localhost:3001/api/inscricao-jogadora/${user.email}`, { method: 'DELETE' });
+        const response = await fetch(`${API_URL}/api/inscricao-jogadora/${user.email}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Falha ao cancelar no servidor.');
         fetchProfileData();
       } catch (error) {

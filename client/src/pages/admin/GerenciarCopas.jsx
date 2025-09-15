@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function GerenciarCopas() {
   const [nome, setNome] = useState('');
   const [data, setData] = useState('');
@@ -10,7 +12,7 @@ function GerenciarCopas() {
   const [copas, setCopas] = useState([]);
 
   const fetchData = () => {
-    fetch('http://localhost:3001/api/copas')
+    fetch(`${API_URL}/api/copas`)
       .then(res => res.json())
       .then(data => setCopas(data));
   };
@@ -23,7 +25,7 @@ function GerenciarCopas() {
     event.preventDefault();
     const copaData = { nome, data, local, limiteEquipes };
     try {
-      const response = await fetch('http://localhost:3001/api/copas', {
+      const response = await fetch(`${API_URL}/api/copas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(copaData),
@@ -48,7 +50,6 @@ function GerenciarCopas() {
       <div className="bg-white p-6 rounded-lg shadow mb-8">
         <h2 className="text-2xl font-semibold mb-4">Criar Nova Copa</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* O formulário continua o mesmo */}
           <div>
             <label htmlFor="nome" className="block text-sm font-medium text-gray-700">Nome da Copa</label>
             <input type="text" id="nome" value={nome} onChange={e => setNome(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" required />

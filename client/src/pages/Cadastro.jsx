@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/Cadastro.css';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function Cadastro() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -21,7 +23,7 @@ function Cadastro() {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/cadastro', {
+      const response = await fetch(`${API_URL}/cadastro`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, email, senha, cpf }),

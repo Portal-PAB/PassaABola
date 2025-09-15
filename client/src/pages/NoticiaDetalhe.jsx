@@ -1,18 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-
-import noticiasData from '../data/mockNoticias.json';
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons"
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+
+// NOVO: Define a URL da API a partir da variável de ambiente
+const API_URL = import.meta.env.VITE_API_URL;
 
 function NoticiaDetalhe() {
   const { id } = useParams();
   const [noticia, setNoticia] = useState(null);
 
   useEffect(() => {
-    const noticiaEncontrada = noticiasData.find(n => n.id === parseInt(id));
-    setNoticia(noticiaEncontrada);
+    // ATUALIZADO: Função para buscar a notícia específica da API
+    const fetchNoticia = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/noticias/${id}`);
+        const noticiaEncontrada = await response.json();
+        setNoticia(noticiaEncontrada);
+      } catch (error) {
+        console.error("Erro ao carregar detalhe da notícia:", error);
+        setNoticia(null); // Garante que não exiba uma notícia antiga em caso de erro
+      }
+    };
+
+    if (id) {
+      fetchNoticia();
+    }
   }, [id]);
 
   if (!noticia) {
@@ -20,7 +33,6 @@ function NoticiaDetalhe() {
   }
 
   const paragrafos = noticia.conteudo ? noticia.conteudo.split('\n') : [];
-
   const primeiraImagem = noticia.imagens && noticia.imagens.length > 0 ? noticia.imagens[0] : null;
   const restoDasImagens = noticia.imagens && noticia.imagens.length > 1 ? noticia.imagens.slice(1) : [];
 
@@ -52,7 +64,6 @@ function NoticiaDetalhe() {
           {paragrafos.map((paragrafo, index) => (
             <React.Fragment key={index}>
               <p>{paragrafo}</p>
-
               {restoDasImagens[index] && (
                 <div className="my-8">
                   <img 

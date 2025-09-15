@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import noticiasData from '../data/mockNoticias.json';
+
+// NOVO: Define a URL da API a partir da variável de ambiente
+const API_URL = import.meta.env.VITE_API_URL;
 
 function Noticias() {
   const [destaque, setDestaque] = useState(null);
@@ -8,13 +10,26 @@ function Noticias() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // ATUALIZADO: Função para buscar notícias da API
+    const fetchNoticias = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(`${API_URL}/api/noticias`);
+        const dadosNoticias = await response.json();
 
-    const noticiaDestaque = noticiasData.find(n => n.destaque === true);
-    const restoDasNoticias = noticiasData.filter(n => n.destaque === false);
-    
-    setDestaque(noticiaDestaque);
-    setOutrasNoticias(restoDasNoticias);
-    setLoading(false);
+        const noticiaDestaque = dadosNoticias.find(n => n.destaque === true);
+        const restoDasNoticias = dadosNoticias.filter(n => n.destaque === false);
+        
+        setDestaque(noticiaDestaque);
+        setOutrasNoticias(restoDasNoticias);
+      } catch (error) {
+        console.error("Erro ao carregar notícias:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNoticias();
   }, []);
 
   if (loading) {

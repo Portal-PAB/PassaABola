@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function InscricaoJogadora() {
   const [nome, setNome] = useState('');
   const [cpf, setCpf] = useState('');
@@ -14,7 +16,7 @@ function InscricaoJogadora() {
     const jogadoraData = { nome, cpf, email, telefone };
 
     try {
-      const response = await fetch('http://localhost:3001/inscricao-jogadora', {
+      const response = await fetch(`${API_URL}/inscricao-jogadora`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(jogadoraData),
@@ -23,7 +25,6 @@ function InscricaoJogadora() {
       const data = await response.json();
       if (response.ok) {
         setMensagem({ type: 'success', text: data.success });
-
         setNome(''); setCpf(''); setEmail(''); setTelefone('');
       } else {
         setMensagem({ type: 'error', text: data.error });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import noticiasData from '../data/mockNoticias.json';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 const momentosImportantes = [
   {
@@ -35,17 +36,20 @@ function HomePage() {
     const carregarDadosHome = async () => {
       try {
         setLoading(true);
-        const [resPartidas, resTabela] = await Promise.all([
-          fetch('http://localhost:3001/api/partidas'),
-          fetch('http://localhost:3001/api/tabela')
+        const [resPartidas, resTabela, resNoticias] = await Promise.all([
+          fetch(`${API_URL}/api/partidas`),
+          fetch(`${API_URL}/api/tabela`),
+          fetch(`${API_URL}/api/noticias`)
         ]);
         const dadosPartidas = await resPartidas.json();
         const dadosTabela = await resTabela.json();
+        const dadosNoticias = await resNoticias.json();
+
         setPartidas(dadosPartidas);
         setTabela(dadosTabela);
 
-        const noticiaDestaque = noticiasData.find(n => n.destaque === true);
-        const outrasNoticias = noticiasData.filter(n => n.destaque === false).slice(0, 2);
+        const noticiaDestaque = dadosNoticias.find(n => n.destaque === true);
+        const outrasNoticias = dadosNoticias.filter(n => n.destaque === false).slice(0, 2);
         setNoticias({ destaque: noticiaDestaque, outras: outrasNoticias });
 
       } catch (error) {

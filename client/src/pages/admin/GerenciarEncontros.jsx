@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function GerenciarEncontros() {
   const [nome, setNome] = useState('');
   const [data, setData] = useState('');
@@ -10,7 +12,7 @@ function GerenciarEncontros() {
   const [encontros, setEncontros] = useState([]);
 
   const fetchData = () => {
-    fetch('http://localhost:3001/api/encontros')
+    fetch(`${API_URL}/api/encontros`)
       .then(res => res.json())
       .then(data => setEncontros(data.sort((a, b) => b.id - a.id)));
   };
@@ -23,7 +25,7 @@ function GerenciarEncontros() {
     event.preventDefault();
     const encontroData = { nome, data, local, limiteInscritos };
     try {
-      const response = await fetch('http://localhost:3001/api/encontros', {
+      const response = await fetch(`${API_URL}/api/encontros`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(encontroData),

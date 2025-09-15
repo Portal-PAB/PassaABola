@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function InscricaoCopa() {
   const [nomeTime, setNomeTime] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [cpf, setCpf] = useState('');
   const [email, setEmail] = useState('');
   const [telefone, setTelefone] = useState('');
-
   const [jogadoras, setJogadoras] = useState([{ nome: '', cpf: '' }]);
-  
   const [mensagem, setMensagem] = useState('');
   const MAX_JOGADORAS = 15;
 
@@ -37,7 +37,7 @@ function InscricaoCopa() {
     const inscricaoData = { nomeTime, responsavel, cpf, email, telefone, jogadoras };
 
     try {
-      const response = await fetch('http://localhost:3001/inscricao-copa', {
+      const response = await fetch(`${API_URL}/inscricao-copa`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(inscricaoData),

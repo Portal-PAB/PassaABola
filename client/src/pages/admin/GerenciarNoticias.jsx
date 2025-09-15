@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function GerenciarNoticias() {
   const [noticias, setNoticias] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchNoticias = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/noticias');
+      const response = await fetch(`${API_URL}/api/noticias`);
       const data = await response.json();
       setNoticias(data.sort((a, b) => b.id - a.id));
     } catch (error) {
@@ -23,7 +25,7 @@ function GerenciarNoticias() {
 
   const handleToggleDestaque = async (id) => {
     try {
-      await fetch(`http://localhost:3001/api/noticias/${id}/toggle-destaque`, {
+      await fetch(`${API_URL}/api/noticias/${id}/toggle-destaque`, {
         method: 'PATCH',
       });
       fetchNoticias();

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function VerInscritosEncontro() {
   const { id } = useParams();
   const [inscritos, setInscritos] = useState([]);
@@ -9,7 +11,7 @@ function VerInscritosEncontro() {
   useEffect(() => {
     const fetchInscritos = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/encontros/${id}/inscritos`);
+        const response = await fetch(`${API_URL}/api/encontros/${id}/inscritos`);
         const data = await response.json();
         setInscritos(data);
       } catch (error) {
@@ -29,13 +31,13 @@ function VerInscritosEncontro() {
         <h1 className="text-3xl font-bold">Inscritos no Encontro</h1>
         <div className="flex gap-4">
           <button
-            onClick={() => window.open(`http://localhost:3001/api/encontros/${id}/inscritos/excel`, "_blank")}
+            onClick={() => window.open(`${API_URL}/api/encontros/${id}/inscritos/excel`, "_blank")}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
           >
             Exportar Excel
           </button>
           <button
-            onClick={() => window.open(`http://localhost:3001/api/encontros/${id}/inscritos/pdf`, "_blank")}
+            onClick={() => window.open(`${API_URL}/api/encontros/${id}/inscritos/pdf`, "_blank")}
             className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           >
             Exportar PDF

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function EscolhaInscricao() {
   const [copaAberta, setCopaAberta] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -8,7 +10,7 @@ function EscolhaInscricao() {
   useEffect(() => {
     const verificarCopaAberta = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/copas/aberta');
+        const response = await fetch(`${API_URL}/api/copas/aberta`);
         const data = await response.json();
         setCopaAberta(data);
       } catch (error) {

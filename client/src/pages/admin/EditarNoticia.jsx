@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 function EditarNoticia() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -16,7 +18,7 @@ function EditarNoticia() {
   useEffect(() => {
     const fetchNoticia = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/noticias/${id}`);
+        const response = await fetch(`${API_URL}/api/noticias/${id}`);
         const data = await response.json();
         
         setTitulo(data.titulo);
@@ -64,7 +66,7 @@ function EditarNoticia() {
     };
 
     try {
-      const response = await fetch(`http://localhost:3001/api/noticias/${id}`, {
+      const response = await fetch(`${API_URL}/api/noticias/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(noticiaData),
@@ -93,6 +95,7 @@ function EditarNoticia() {
       </div>
       
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow space-y-6">
+        {/* O formulário JSX continua igual */}
         <div>
           <label htmlFor="titulo" className="block text-sm font-medium text-gray-700">Título</label>
           <input type="text" id="titulo" value={titulo} onChange={(e) => setTitulo(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500" required />
