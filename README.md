@@ -99,6 +99,15 @@ Este projeto está publicado utilizando os planos gratuitos do Render (para o ba
 
 ---
 
+## 👥 Integrantes
+
+- Guilherme Macedo - RM563330 
+- Laura Barreto - RM561965
+- Matheus Freitas Vieira - RM566198
+- Natália Camargo - RM565769
+
+---
+
 ## 🔮 Melhorias Futuras
 
 [ ] Finalizar o Painel de Admin para Gerenciamento Manual de Jogos e Tabelas: Permitir que administradores possam adicionar jogos, atualizar resultados e criar tabelas de classificação para campeonatos que não são cobertos pela API externa.
