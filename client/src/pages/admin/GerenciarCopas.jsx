@@ -39,7 +39,7 @@ function GerenciarCopas() {
         setMensagem({ type: 'error', text: result.error });
       }
     } catch (error) {
-      setMensagem({ type: 'error', text: 'Erro de conexão.' });
+      setMensagem({ type: 'error', text: 'Erro de conexão.' }, error);
     }
   };
 

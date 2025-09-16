@@ -8,15 +8,12 @@ function VerInscritosCopa() {
   const { id } = useParams();
   const [equipes, setEquipes] = useState([]);
   const [jogadorasAvulsas, setJogadorasAvulsas] = useState([]);
-  // NOVO: Estado para controlar qual time está selecionado para cada jogadora
   const [timeSelecionado, setTimeSelecionado] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ATUALIZADO: Agora a função fetchData pode ser chamada para recarregar os dados
   const fetchInscritos = async () => {
     try {
-      // Removido o setLoading(true) daqui para evitar piscar a tela ao recarregar
       const response = await fetch(`${API_URL}/api/copas/${id}/inscritos`);
       if (!response.ok) {
         throw new Error('Falha ao buscar dados da copa.');
@@ -24,9 +21,9 @@ function VerInscritosCopa() {
       const data = await response.json();
       setEquipes(data.equipes || []);
       setJogadorasAvulsas(data.jogadorasAvulsas || []);
-    } catch (err) {
+    } catch (error) {
       setError('Erro ao carregar os dados das inscrições.');
-      console.error("Erro ao buscar inscritos da copa:", err);
+      console.error("Erro ao buscar inscritos da copa:", error);
     } finally {
       setLoading(false);
     }
@@ -36,13 +33,10 @@ function VerInscritosCopa() {
     setLoading(true);
     fetchInscritos();
   }, [id]);
-
-  // NOVO: Função para lidar com a seleção de time no dropdown
   const handleSelectChange = (jogadoraId, timeId) => {
     setTimeSelecionado(prev => ({ ...prev, [jogadoraId]: timeId }));
   };
 
-  // NOVO: Função para enviar a jogadora para o time selecionado
   const handleAdicionarJogadora = async (jogadora) => {
     const idDoTime = timeSelecionado[jogadora.id];
     if (!idDoTime) {
@@ -58,16 +52,14 @@ function VerInscritosCopa() {
       });
 
       if (response.ok) {
-        // Recarrega os dados da página para refletir a mudança
         await fetchInscritos();
-        // Limpa a seleção para essa jogadora
         setTimeSelecionado(prev => ({ ...prev, [jogadora.id]: '' }));
       } else {
         const data = await response.json();
         alert(`Erro: ${data.error || 'Não foi possível adicionar a jogadora.'}`);
       }
-    } catch (err) {
-      console.error("Erro ao adicionar jogadora:", err);
+    } catch (error) {
+      console.error("Erro ao adicionar jogadora:", error);
       alert('Erro de conexão ao tentar adicionar a jogadora.');
     }
   };
@@ -76,7 +68,6 @@ function VerInscritosCopa() {
   if (loading) return <p>Carregando inscrições...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
-  // NOVO: Filtra apenas os times que ainda têm vagas
   const timesComVaga = equipes.filter(e => e.jogadoras.length < MAX_JOGADORAS);
 
   return (
@@ -112,7 +103,6 @@ function VerInscritosCopa() {
                 <p><strong>Telefone:</strong> {jogadora.telefone || 'Não informado'}</p>
               </div>
 
-              {/* NOVO: Dropdown e botão para adicionar jogadora */}
               <div className="mt-4 flex gap-2">
                 <select
                   className="flex-1 border border-gray-300 rounded-md py-1 px-2"

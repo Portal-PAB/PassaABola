@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
-// NOVO: Define a URL da API a partir da variável de ambiente
 const API_URL = import.meta.env.VITE_API_URL;
 
 function NoticiaDetalhe() {
@@ -11,7 +10,6 @@ function NoticiaDetalhe() {
   const [noticia, setNoticia] = useState(null);
 
   useEffect(() => {
-    // ATUALIZADO: Função para buscar a notícia específica da API
     const fetchNoticia = async () => {
       try {
         const response = await fetch(`${API_URL}/api/noticias/${id}`);
@@ -19,7 +17,7 @@ function NoticiaDetalhe() {
         setNoticia(noticiaEncontrada);
       } catch (error) {
         console.error("Erro ao carregar detalhe da notícia:", error);
-        setNoticia(null); // Garante que não exiba uma notícia antiga em caso de erro
+        setNoticia(null);
       }
     };
 

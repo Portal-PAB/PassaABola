@@ -1,5 +1,5 @@
-import React from 'react'; // Adicionado para boas práticas, embora o Vite não exija.
-import TabelaEstatisticas from "../components/TabelaEstatisticas"; // <-- ESTA É A LINHA QUE FALTAVA
+import React from 'react';
+import TabelaEstatisticas from "../components/TabelaEstatisticas";
 
 function Historia() {
   const artilheiras = [

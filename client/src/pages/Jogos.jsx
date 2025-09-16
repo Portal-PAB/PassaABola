@@ -29,7 +29,6 @@ function Jogos() {
     const [artilharia, setArtilharia] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // NOVO: Estado para controlar a visualização em telas pequenas
     const [activeMobileView, setActiveMobileView] = useState('jogos');
 
     useEffect(() => {
@@ -73,7 +72,6 @@ function Jogos() {
         return <div className="text-center text-red-400 p-10">Erro: {error}</div>;
     }
 
-    // Componentes de conteúdo para reutilização
     const JogosContent = () => (
         <div className="space-y-8">
             <div>
@@ -149,8 +147,7 @@ function Jogos() {
     return (
         <div className="bg-white min-h-full p-4 sm:p-8">
             <div className="max-w-7xl mx-auto">
-                
-                {/* --- LAYOUT PARA DESKTOP (Telas grandes) --- */}
+
                 <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2">
                         <JogosContent />
@@ -161,9 +158,7 @@ function Jogos() {
                     </div>
                 </div>
 
-                {/* --- LAYOUT PARA MOBILE E TABLET (Telas pequenas) --- */}
                 <div className="block lg:hidden">
-                    {/* Botões de navegação */}
                     <div className="mb-6 flex border-b">
                         <button 
                             onClick={() => setActiveMobileView('jogos')}
@@ -185,7 +180,6 @@ function Jogos() {
                         </button>
                     </div>
 
-                    {/* Conteúdo que alterna com base no botão clicado */}
                     <div>
                         {activeMobileView === 'jogos' && <JogosContent />}
                         {activeMobileView === 'tabela' && <TabelaContent />}

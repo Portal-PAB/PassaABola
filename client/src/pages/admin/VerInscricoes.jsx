@@ -22,8 +22,8 @@ function VerInscricoes() {
       const dadosJogadoras = await resJogadoras.json();
       setEquipes(dadosEquipes);
       setJogadorasAvulsas(dadosJogadoras);
-    } catch (err) {
-      setError('Erro ao carregar os dados das inscrições.');
+    } catch (error) {
+      setError('Erro ao carregar os dados das inscrições.', error);
     } finally {
       setLoading(false);
     }
@@ -51,8 +51,8 @@ function VerInscricoes() {
       } else {
         alert('Erro ao adicionar jogadora.');
       }
-    } catch (err) {
-      alert('Erro de conexão ao adicionar jogadora.');
+    } catch (error) {
+      alert('Erro de conexão ao adicionar jogadora.', error);
     }
   };
 

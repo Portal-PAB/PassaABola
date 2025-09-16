@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 
-// NOVO: Define a URL da API a partir da variável de ambiente
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Nota: O nome do componente foi mantido como no arquivo original.
 function GerenciarNoticias() {
   const [titulo, setTitulo] = useState('');
   const [resumo, setResumo] = useState('');
@@ -43,7 +41,6 @@ function GerenciarNoticias() {
     };
 
     try {
-      // ATUALIZADO: Usa a variável API_URL
       const response = await fetch(`${API_URL}/api/noticias`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,7 +50,6 @@ function GerenciarNoticias() {
       const data = await response.json();
       if (response.ok) {
         setMensagem({ type: 'success', text: data.success });
-        // Limpa o formulário
         setTitulo(''); setResumo(''); setConteudo(''); setImagens(['']); setDestaque(false);
       } else {
         setMensagem({ type: 'error', text: data.error });

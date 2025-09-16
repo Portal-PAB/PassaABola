@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-// NOVO: Define a URL da API a partir da variável de ambiente
 const API_URL = import.meta.env.VITE_API_URL;
 
 function Noticias() {
@@ -10,7 +9,6 @@ function Noticias() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ATUALIZADO: Função para buscar notícias da API
     const fetchNoticias = async () => {
       try {
         setLoading(true);

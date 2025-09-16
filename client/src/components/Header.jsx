@@ -41,8 +41,7 @@ function Header() {
             <li><Link to="/copa-pab" onClick={fecharMenu}>Copa PAB</Link></li>
             <li><Link to="/encontro-pab" onClick={fecharMenu}>Encontro PAB</Link></li>
             <li><Link to="/sobre" onClick={fecharMenu}>Sobre</Link></li>
-            
-            {/* ATUALIZADO: Item de perfil adicionado para o menu mobile */}
+
             <li className="item-menu-perfil">
               {user ? (
                 <Link to="/perfil" onClick={fecharMenu}>
