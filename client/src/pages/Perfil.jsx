@@ -49,11 +49,9 @@ function Perfil() {
         setMinhasInscricoes(dadosInscricoes);
         setTimes(dadosTimes.map(item => item.team));
 
-        // ATUALIZADO: Usando time_favorito_id (snake_case)
         if (user.time_favorito_id) {
             const [resTabela, resPartidas, resArtilharia] = await Promise.all([
                 fetch(`${API_URL}/api/tabela`),
-                // ATUALIZADO: Usando time_favorito_id (snake_case)
                 fetch(`${API_URL}/api/times/${user.time_favorito_id}/partidas`),
                 fetch(`${API_URL}/api/artilharia`)
             ]);
@@ -92,17 +90,63 @@ function Perfil() {
     }
   };
 
-  const handleCancelarCopa = async () => { /* ...código sem alteração... */ };
-  const handleCancelarEncontro = async () => { /* ...código sem alteração... */ };
-  const handleCancelarParticipacao = async (timeId) => { /* ...código sem alteração... */ };
-  const handleCancelarCopaAvulsa = async () => { /* ...código sem alteração... */ };
+ const handleCancelarCopa = async () => {
+    if (window.confirm("Tem certeza que deseja cancelar a inscrição da sua equipe na copa? Esta ação não pode ser desfeita.")) {
+      try {
+        const response = await fetch(`${API_URL}/api/inscricao-copa/${user.email}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Falha ao cancelar no servidor.');
+        fetchProfileData();
+      } catch (error) {
+        console.error("Erro ao cancelar inscrição:", error);
+        alert("Erro ao cancelar inscrição.");
+      }
+    }
+  };
+
+  const handleCancelarEncontro = async () => {
+    if (window.confirm("Tem certeza que deseja cancelar sua inscrição no encontro?")) {
+      try {
+        const response = await fetch(`${API_URL}/api/inscricao-encontro/${user.email}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Falha ao cancelar no servidor.');
+        fetchProfileData();
+      } catch (error) {
+        console.error("Erro ao cancelar inscrição:", error);
+        alert("Erro ao cancelar inscrição.");
+      }
+    }
+  };
+
+  const handleCancelarParticipacao = async (timeId) => {
+    if(window.confirm("Tem certeza que deseja cancelar sua participação nesta equipe?")){
+        try {
+            const response = await fetch(`${API_URL}/api/equipes/${timeId}/jogadora/${user.cpf}`, { method: 'DELETE' });
+            if (!response.ok) throw new Error('Falha ao cancelar participação.');
+            fetchProfileData();
+        } catch (error) {
+            console.error("Erro ao cancelar participação:", error);
+            alert("Erro ao cancelar participação.");
+        }
+    }
+  };
+
+  const handleCancelarCopaAvulsa = async () => {
+    if (window.confirm("Tem certeza que deseja cancelar sua inscrição avulsa na copa?")) {
+      try {
+        const response = await fetch(`${API_URL}/api/inscricao-jogadora/${user.email}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Falha ao cancelar no servidor.');
+        fetchProfileData();
+      } catch (error) {
+        console.error("Erro ao cancelar inscrição avulsa:", error);
+        alert("Erro ao cancelar inscrição.");
+      }
+    }
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  // ATUALIZADO: Usando time_favorito_id (snake_case)
   const timeFavoritoInfo = user?.time_favorito_id ? times.find(t => t.id === parseInt(user.time_favorito_id)) : null;
 
   if (loading) {
