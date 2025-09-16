@@ -86,6 +86,17 @@ O projeto segue uma estrutura de monorepo, com o código do cliente e do servido
 ├── README.md
 
 ```
+
+
+## 🐌 Performance (Plano Gratuito)
+Este projeto está publicado utilizando os planos gratuitos do Render (para o backend e banco de dados).
+
+* Hibernação do Servidor: Serviços no plano gratuito são "congelados" (hibernam) após um período de inatividade. Quando uma nova requisição chega, o Render precisa "acordar" o servidor, um processo que pode levar de 30 segundos a um minuto.
+
+* Primeira Requisição Lenta: Como resultado, a primeira visita ao site ou a primeira ação que depende da API (como fazer login) pode demorar bastante para carregar.
+
+* Navegação Pós-Inicialização: Após o servidor "acordar", as requisições seguintes são processadas sem o atraso inicial. No entanto, a navegação geral do site ainda pode ser um pouco lenta devido aos recursos limitados do plano gratuito.
+
 ---
 
 ## 🔮 Melhorias Futuras
