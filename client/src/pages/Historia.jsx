@@ -211,7 +211,7 @@ function Historia() {
           <div className="rounded-lg  overflow-hidden transform transition duration-300 hover:scale-105 cursor-pointer">
             <div className="p-4">
               <img
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSio63jBjG1Iuz28XrpLMdf85ha4civmkms2Q&s"
+                src="https://s2-ge.glbimg.com/DIRxSEtTRC-DzMLZrWP26ksWDng=/0x0:3000x1984/984x0/smart/filters:strip_icc()/s.glbimg.com/es/ge/f/original/2017/07/10/pan_3.jpg"
                 alt="Jogadora Marta abraçando 6 troféus"
                 className="rounded-3xl w-100"
               />

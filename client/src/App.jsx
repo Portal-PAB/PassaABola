@@ -23,6 +23,7 @@ import InscricaoJogadora from './pages/InscricaoJogadora';
 import EncontroPAB from './pages/EncontroPAB';
 import Historia from './pages/Historia';
 import Sobre from './pages/Sobre';
+import EmBreve from './pages/EmBreve';
 
 // Páginas de Admin
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -34,6 +35,7 @@ import GerenciarCopas from './pages/admin/GerenciarCopas';
 import GerenciarEncontros from './pages/admin/GerenciarEncontros';
 import VerInscritosEncontro from './pages/admin/VerInscritosEncontro';
 import VerInscritosCopa from './pages/admin/VerInscritosCopa';
+import GerenciarJogos from "./pages/admin/GerenciarJogos";
 
 import './App.css'; 
 
@@ -57,11 +59,14 @@ function App() {
           <Route path="/inscricao-jogadora" element={<InscricaoJogadora />} />
           <Route path="/historia" element={<Historia/>} />
           <Route path="/sobre" element={<Sobre/>} />
+          <Route path="/fotos" element={<EmBreve />} />
+          <Route path="/chaveamento" element={<EmBreve />} />
         </Route>
 
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<AdminDashboard />} />
           <Route path="noticias" element={<GerenciarNoticias />} />
+          <Route path="jogosTabelas" element={<GerenciarJogos />} />
           <Route path="noticias/nova" element={<AdicionarNoticia />} />
           <Route path="noticias/editar/:id" element={<EditarNoticia />} />
           <Route path="copas" element={<GerenciarCopas />} />

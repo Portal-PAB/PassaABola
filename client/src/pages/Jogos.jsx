@@ -29,6 +29,8 @@ function Jogos() {
     const [artilharia, setArtilharia] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // NOVO: Estado para controlar a visualização em telas pequenas
+    const [activeMobileView, setActiveMobileView] = useState('jogos');
 
     useEffect(() => {
         const carregarDados = async () => {
@@ -64,85 +66,132 @@ function Jogos() {
     }, []);
 
     if (loading) {
-        return <div className="text-center text-white p-10">Carregando dados...</div>;
+        return <div className="text-center p-10">Carregando dados...</div>;
     }
 
     if (error) {
         return <div className="text-center text-red-400 p-10">Erro: {error}</div>;
     }
 
+    // Componentes de conteúdo para reutilização
+    const JogosContent = () => (
+        <div className="space-y-8">
+            <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Jogos</h2>
+                <div className="space-y-4">
+                    {partidas.map(partida => (
+                        <CardPartida key={partida.id} partida={partida} />
+                    ))}
+                </div>
+            </div>
+            <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">Campeonatos</h2>
+                <ul className="space-y-2 text-purple-700 font-semibold">
+                    <li className="p-3 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
+                        Campeonato Brasileiro Feminino - Série A1 (2025)
+                    </li>
+                    <li className="p-3 rounded-lg cursor-pointer hover:bg-gray-200">Copa do Mundo Feminina</li>
+                    <li className="p-3 rounded-lg cursor-pointer hover:bg-gray-200">Copa América Feminina</li>
+                </ul>
+            </div>
+        </div>
+    );
+
+    const TabelaContent = () => (
+        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+            <h2 className="text-lg font-bold text-center mb-4">Tabela - BR Feminino A1</h2>
+            <table className="w-full text-sm text-left">
+                <thead className="text-xs text-gray-500 uppercase">
+                    <tr>
+                        <th className="p-2">#</th>
+                        <th className="p-2">Clube</th>
+                        <th className="p-2 text-center">P</th>
+                        <th className="p-2 text-center">J</th>
+                        <th className="p-2 text-center">V</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {tabela.map(item => (
+                        <tr key={item.pos} className="border-t border-gray-200">
+                            <td className="p-2 font-semibold">{item.pos}</td>
+                            <td className="p-2 flex items-center gap-2">
+                                <img src={item.time.logo} alt={item.time.nome} className="w-5 h-5" />
+                                {item.time.nome}
+                            </td>
+                            <td className="p-2 text-center font-bold">{item.P}</td>
+                            <td className="p-2 text-center">{item.J}</td>
+                            <td className="p-2 text-center">{item.V}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+
+    const ArtilhariaContent = () => (
+        <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
+            <h2 className="text-lg font-bold text-center mb-4">Artilharia</h2>
+            <ul className="space-y-2">
+                {artilharia.map((jogadora, index) => (
+                    <li key={index} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <img src={jogadora.logo} alt={jogadora.time} className="w-6 h-6" />
+                            <span className="text-sm font-semibold">{jogadora.jogadora}</span>
+                            <span className="text-xs text-gray-500">({jogadora.time})</span>
+                        </div>
+                        <span className="font-bold text-purple-700">{jogadora.gols} gols</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+
     return (
         <div className="bg-white min-h-full p-4 sm:p-8">
-            <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-                <div className="lg:col-span-2 space-y-8">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Jogos</h2>
-                        <div className="space-y-4">
-                            {partidas.map(partida => (
-                                <CardPartida key={partida.id} partida={partida} />
-                            ))}
-                        </div>
+            <div className="max-w-7xl mx-auto">
+                
+                {/* --- LAYOUT PARA DESKTOP (Telas grandes) --- */}
+                <div className="hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div className="lg:col-span-2">
+                        <JogosContent />
                     </div>
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-800 mb-4">Campeonatos</h2>
-                        <ul className="space-y-2 text-purple-700 font-semibold">
-                            <li className="p-3 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200">
-                                Campeonato Brasileiro Feminino - Série A1 (2025)
-                            </li>
-                            <li className="p-3 rounded-lg cursor-pointer hover:bg-gray-200">Copa do Mundo Feminina</li>
-                            <li className="p-3 rounded-lg cursor-pointer hover:bg-gray-200">Copa América Feminina</li>
-                        </ul>
+                    <div className="lg:col-span-1 space-y-8">
+                        <TabelaContent />
+                        <ArtilhariaContent />
                     </div>
                 </div>
 
-                <div className="lg:col-span-1 space-y-8">
-                    <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-                        <h2 className="text-lg font-bold text-center mb-4">Tabela - BR Feminino A1</h2>
-                        <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-gray-500 uppercase">
-                                <tr>
-                                    <th className="p-2">#</th>
-                                    <th className="p-2">Clube</th>
-                                    <th className="p-2 text-center">P</th>
-                                    <th className="p-2 text-center">J</th>
-                                    <th className="p-2 text-center">V</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {tabela.map(item => (
-                                    <tr key={item.pos} className="border-t border-gray-200">
-                                        <td className="p-2 font-semibold">{item.pos}</td>
-                                        <td className="p-2 flex items-center gap-2">
-                                            <img src={item.time.logo} alt={item.time.nome} className="w-5 h-5" />
-                                            {item.time.nome}
-                                        </td>
-                                        <td className="p-2 text-center font-bold">{item.P}</td>
-                                        <td className="p-2 text-center">{item.J}</td>
-                                        <td className="p-2 text-center">{item.V}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                {/* --- LAYOUT PARA MOBILE E TABLET (Telas pequenas) --- */}
+                <div className="block lg:hidden">
+                    {/* Botões de navegação */}
+                    <div className="mb-6 flex border-b">
+                        <button 
+                            onClick={() => setActiveMobileView('jogos')}
+                            className={`flex-1 py-2 text-center font-semibold transition-colors duration-200 ${activeMobileView === 'jogos' ? 'border-b-2 border-purple-600 text-purple-600' : 'text-gray-500'}`}
+                        >
+                            Jogos
+                        </button>
+                        <button 
+                            onClick={() => setActiveMobileView('tabela')}
+                            className={`flex-1 py-2 text-center font-semibold transition-colors duration-200 ${activeMobileView === 'tabela' ? 'border-b-2 border-purple-600 text-purple-600' : 'text-gray-500'}`}
+                        >
+                            Tabela
+                        </button>
+                        <button 
+                            onClick={() => setActiveMobileView('artilharia')}
+                            className={`flex-1 py-2 text-center font-semibold transition-colors duration-200 ${activeMobileView === 'artilharia' ? 'border-b-2 border-purple-600 text-purple-600' : 'text-gray-500'}`}
+                        >
+                            Artilharia
+                        </button>
                     </div>
 
-                    <div className="bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-                        <h2 className="text-lg font-bold text-center mb-4">Artilharia</h2>
-                        <ul className="space-y-2">
-                            {artilharia.map((jogadora, index) => (
-                                <li key={index} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <img src={jogadora.logo} alt={jogadora.time} className="w-6 h-6" />
-                                        <span className="text-sm font-semibold">{jogadora.jogadora}</span>
-                                        <span className="text-xs text-gray-500">({jogadora.time})</span>
-                                    </div>
-                                    <span className="font-bold text-purple-700">{jogadora.gols} gols</span>
-                                </li>
-                            ))}
-                        </ul>
+                    {/* Conteúdo que alterna com base no botão clicado */}
+                    <div>
+                        {activeMobileView === 'jogos' && <JogosContent />}
+                        {activeMobileView === 'tabela' && <TabelaContent />}
+                        {activeMobileView === 'artilharia' && <ArtilhariaContent />}
                     </div>
                 </div>
-
             </div>
         </div>
     );

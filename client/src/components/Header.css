@@ -35,7 +35,7 @@
   width: auto;   
 }
 
-
+/* ATUALIZADO: Garante que a seção de perfil do desktop não apareça no mobile */
 .profile-section {
   display: none;
 }
@@ -70,7 +70,12 @@
   border-bottom: 1px solid var(--roxo-claro);
 }
 
-/* Estilos do Ícone Hambúrguer */
+/* ATUALIZADO: Regra para o novo item de menu do perfil */
+.item-menu-perfil a {
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
 .menu-hamburguer {
   display: flex;
   flex-direction: column;
@@ -98,13 +103,17 @@
 }
 
 /* Media Query para Tablet e Desktop */
-
 @media (min-width: 768px) {
   .menu-hamburguer {
     display: none;
   }
   .profile-section {
     display: block;
+  }
+
+  /* ATUALIZADO: Esconde o item de perfil de dentro do menu em telas grandes */
+  .item-menu-perfil {
+    display: none;
   }
 
   .header-container {

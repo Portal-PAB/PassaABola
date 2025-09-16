@@ -11,12 +11,11 @@ const PDFDocument = require('pdfkit');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const saltRounds = 10;
-const cache = new NodeCache({ stdTTL: 7200 }); // Cache de 2 horas
+const cache = new NodeCache({ stdTTL: 7200 });
 
 app.use(cors());
 app.use(express.json());
 
-// Configuração da Pool de Conexão com o PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -24,14 +23,13 @@ const pool = new Pool({
   }
 });
 
-// Helper para pegar o ID da copa/encontro aberto
 const getOpenEntity = async (tableName) => {
     const result = await pool.query(`SELECT * FROM ${tableName} WHERE status = 'aberta' LIMIT 1`);
     return result.rows.length > 0 ? result.rows[0] : null;
 };
 
 
-// ===== ROTAS DE AUTENTICAÇÃO =====
+// ROTAS DE AUTENTICAÇÃO
 
 app.post('/cadastro', async (req, res) => {
   const { nome, email, senha, cpf } = req.body;
@@ -79,7 +77,7 @@ app.post('/login', async (req, res) => {
 });
 
 
-// ===== ROTAS DE GERENCIAMENTO DE COPAS =====
+// ROTAS DE GERENCIAMENTO DE COPAS
 
 app.post('/api/copas', async (req, res) => {
     const { nome, data, local, limiteEquipes } = req.body;
@@ -138,7 +136,7 @@ app.get('/api/copas/:id/inscritos', async (req, res) => {
 });
 
 
-// ===== ROTAS DE GERENCIAMENTO DE ENCONTROS =====
+// ROTAS DE GERENCIAMENTO DE ENCONTROS
 
 app.post('/api/encontros', async (req, res) => {
   const { nome, data, local, limiteInscritos } = req.body;
@@ -196,7 +194,7 @@ app.get('/api/encontros/:id/inscritos', async (req, res) => {
 });
 
 
-// ===== ROTAS DE INSCRIÇÃO =====
+// ROTAS DE INSCRIÇÃO
 
 app.post('/inscricao-copa', async (req, res) => {
     try {
@@ -278,7 +276,7 @@ app.get('/api/encontros/aberto/inscricoes', async (req, res) => {
 });
 
 
-// ===== ROTAS DE ADMIN =====
+// ROTAS DE ADMIN
 
 app.get('/api/equipes', async (req, res) => {
     try {
@@ -348,7 +346,7 @@ app.post('/api/equipes/:timeId/adicionar-jogadora', async (req, res) => {
 });
 
 
-// ===== ROTAS DE GERENCIAMENTO DE NOTÍCIAS =====
+// ROTAS DE GERENCIAMENTO DE NOTÍCIAS
 
 app.get('/api/noticias', async (req, res) => {
     try {
@@ -417,7 +415,7 @@ app.patch('/api/noticias/:id/toggle-destaque', async (req, res) => {
 });
 
 
-// ===== ROTAS DE USUÁRIO =====
+// ROTAS DE USUÁRIO
 
 app.get('/api/usuario/:email', async (req, res) => {
     try {
@@ -484,7 +482,7 @@ app.get('/api/usuario/minhas-inscricoes/:email', async (req, res) => {
 });
 
 
-// ===== ROTAS DE CANCELAMENTO =====
+// ROTAS DE CANCELAMENTO
 
 app.delete('/api/inscricao-copa/:email', async (req, res) => {
     const { email } = req.params;
@@ -547,7 +545,7 @@ app.delete('/api/inscricao-jogadora/:email', async (req, res) => {
 });
 
 
-// ===== ROTAS DE EXPORTAÇÃO (EXCEL/PDF) =====
+// ROTAS DE EXPORTAÇÃO (EXCEL/PDF)
 
 app.get('/api/encontros/:id/inscritos/excel', async (req, res) => {
   try {
@@ -641,7 +639,7 @@ app.get('/api/copas/:id/inscritos/pdf', async (req, res) => {
 });
 
 
-// ===== ROTAS DA API-FOOTBALL (EXTERNAS - SEM ALTERAÇÃO) =====
+// ROTAS DA API-FOOTBALL
 const apiConfig = { headers: { 'x-apisports-key': process.env.API_KEY } };
 
 app.get('/api/ligas', async (req, res) => {
@@ -722,7 +720,7 @@ app.get('/api/times/:timeId/partidas', async (req, res) => {
 });
 
 
-// ===== INICIA O SERVIDOR =====
+// INICIA O SERVIDOR
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });

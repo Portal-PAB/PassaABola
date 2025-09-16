@@ -13,9 +13,11 @@ function AdminLayout() {
           <span className="text-sm text-gray-400">{user?.email}</span>
         </div>
         <nav className="flex-1 p-4 space-y-2">
+          <Link to="/" className="block py-2 px-4 rounded hover:bg-gray-700">Home</Link>
           <Link to="/admin/copas" className="block py-2 px-4 rounded hover:bg-gray-700">Gerenciar Copas</Link>
           <Link to="/admin/encontros" className="block py-2 px-4 rounded hover:bg-gray-700">Gerenciar Encontros</Link>
           <Link to="/admin/noticias" className="block py-2 px-4 rounded hover:bg-gray-700">Gerenciar Notícias</Link>
+          <Link to="/admin/jogosTabelas" className="block py-2 px-4 rounded hover:bg-gray-700">Gerenciar Jogos e Tabelas Manualmente</Link>
         </nav>
         <div className="p-4 border-t border-gray-700">
           <button onClick={logout} className="w-full text-left py-2 px-4 rounded bg-red-600 hover:bg-red-700">
