@@ -90,5 +90,8 @@ O projeto segue uma estrutura de monorepo, com o código do cliente e do servido
 
 ## 🔮 Melhorias Futuras
 
+[ ] Finalizar o Painel de Admin para Gerenciamento Manual de Jogos e Tabelas: Permitir que administradores possam adicionar jogos, atualizar resultados e criar tabelas de classificação para campeonatos que não são cobertos pela API externa.
 
+[ ] Desenvolver a Galeria de Fotos: Criar uma seção onde as fotos dos eventos (Copas e Encontros) possam ser publicadas e visualizadas pelos usuários.
 
+[ ] Implementar a visualização de Chaveamentos: Desenvolver a interface para exibir os chaveamentos e o mata-mata das Copas PAB, mostrando o progresso dos times no torneio.
