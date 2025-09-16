@@ -47,7 +47,6 @@ function EncontroPAB() {
       return;
     }
     setFormEmail(user.email || '');
-    // Corrigido para user.nome, que é o padrão que estamos usando
     setFormNome(user.nome || ''); 
     setIsRegistering(true);
   };
@@ -71,7 +70,7 @@ function EncontroPAB() {
             setMensagem({ type: 'error', text: result.error });
         }
     } catch(error) {
-        setMensagem({ type: 'error', text: 'Erro de conexão.' });
+        setMensagem({ type: 'error', text: 'Erro de conexão.' }, error);
     }
   };
 
@@ -79,8 +78,6 @@ function EncontroPAB() {
     return <div className="text-center p-12 bg-white">Carregando informações do encontro...</div>;
   }
 
-  // ATUALIZADO: A MUDANÇA ESTÁ AQUI
-  // Usamos parseInt() para garantir que o limite de inscritos seja um número
   const vagasDisponiveis = encontro ? parseInt(encontro.limite_inscritos, 10) - inscritos.length : 0;
   const jaInscrito = user && inscritos.some(i => i.email === user.email);
 
@@ -136,7 +133,6 @@ function EncontroPAB() {
                 </p>
                 <div className="my-8 p-6 bg-purple-50 rounded-lg">
                   <p className="text-2xl font-bold text-purple-800">{vagasDisponiveis > 0 ? `${vagasDisponiveis} vagas restantes` : 'Inscrições Esgotadas'}</p>
-                  {/* Corrigido para limite_inscritos (snake_case) para consistência */}
                   <p className="text-sm text-gray-500">de {encontro.limite_inscritos} vagas no total</p>
                 </div>
                 

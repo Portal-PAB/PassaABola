@@ -52,7 +52,7 @@ function InscricaoCopa() {
         setMensagem({ type: 'error', text: data.error });
       }
     } catch (error) {
-      setMensagem({ type: 'error', text: 'Erro de conexão com o servidor.' });
+      setMensagem({ type: 'error', text: 'Erro de conexão com o servidor.' }, error);
     }
   };
 

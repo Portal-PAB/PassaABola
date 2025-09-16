@@ -36,7 +36,7 @@ function Cadastro() {
         setMensagem(data.error);
       }
     } catch (error) {
-      setMensagem('Erro de conexão com o servidor.');
+      setMensagem('Erro de conexão com o servidor.', error);
     }
   };
 
