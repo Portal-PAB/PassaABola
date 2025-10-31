@@ -2,8 +2,6 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
-const axios = require('axios');
-const NodeCache = require('node-cache');
 const { Pool } = require('pg');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
@@ -11,7 +9,6 @@ const PDFDocument = require('pdfkit');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const saltRounds = 10;
-const cache = new NodeCache({ stdTTL: 7200 });
 
 app.use(cors());
 app.use(express.json());
@@ -23,26 +20,35 @@ const pool = new Pool({
   }
 });
 
+// Helper para pegar o campeonato ativo
+const getActiveCampeonatoId = async () => {
+    const result = await pool.query(`SELECT id FROM campeonatos WHERE ativo = true LIMIT 1`);
+    if (result.rows.length === 0) {
+        // Se nenhum estiver ativo, pega o último criado
+        const last = await pool.query(`SELECT id FROM campeonatos ORDER BY id DESC LIMIT 1`);
+        return last.rows.length > 0 ? last.rows[0].id : null;
+    }
+    return result.rows[0].id;
+};
+
+// Helper para pegar copa/encontro aberto (PAB)
 const getOpenEntity = async (tableName) => {
     const result = await pool.query(`SELECT * FROM ${tableName} WHERE status = 'aberta' LIMIT 1`);
     return result.rows.length > 0 ? result.rows[0] : null;
 };
 
 
-// ROTAS DE AUTENTICAÇÃO
-
+// ===== ROTAS DE AUTENTICAÇÃO =====
+// (Sem alterações)
 app.post('/cadastro', async (req, res) => {
   const { nome, email, senha, cpf } = req.body;
   if (!nome || !email || !senha || !cpf) return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
-
   const cpfLimpo = cpf.replace(/[^\d]/g, '');
-
   try {
     const userCheck = await pool.query('SELECT 1 FROM contas WHERE email = $1 OR cpf = $2', [email, cpfLimpo]);
     if (userCheck.rows.length > 0) {
       return res.status(400).json({ error: 'Este email ou CPF já está em uso.' });
     }
-
     const senhaHash = await bcrypt.hash(senha, saltRounds);
     await pool.query(
       'INSERT INTO contas (nome, email, senha_hash, cpf) VALUES ($1, $2, $3, $4)',
@@ -58,12 +64,10 @@ app.post('/cadastro', async (req, res) => {
 app.post('/login', async (req, res) => {
   const { email, senha } = req.body;
   if (!email || !senha) return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
-
   try {
     const result = await pool.query('SELECT * FROM contas WHERE email = $1', [email]);
     const conta = result.rows[0];
     if (!conta) return res.status(404).json({ error: 'Usuário não encontrado.' });
-
     const match = await bcrypt.compare(senha, conta.senha_hash);
     if (match) {
       res.status(200).json({ success: 'Login bem-sucedido!' });
@@ -75,7 +79,6 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Erro interno do servidor.' });
   }
 });
-
 
 // ROTAS DE GERENCIAMENTO DE COPAS
 
@@ -430,14 +433,35 @@ app.get('/api/usuario/:email', async (req, res) => {
 });
 
 app.post('/api/usuario/favoritar-time', async (req, res) => {
-    const { email, timeId } = req.body;
-    const timeIdNumerico = timeId ? parseInt(timeId, 10) : null;
-    if (!email || timeIdNumerico === null) return res.status(400).json({ error: 'Email e timeId são obrigatórios.'});
+    const { email, timeId } = req.body; // timeId pode ser um número (ex: 1005) ou null
 
+    // 1. Validar email
+    if (!email) {
+      return res.status(400).json({ error: 'Email é obrigatório.'});
+    }
+    
+    // 2. Validar timeId (não pode estar faltando)
+    if (timeId === undefined) {
+      return res.status(400).json({ error: 'O campo timeId é obrigatório (pode ser null).'});
+    }
+
+    // 3. Processar e validar o timeId
+    let timeIdParaSalvar;
+    if (timeId === null) {
+      timeIdParaSalvar = null; // Permitido (o usuário está limpando o time)
+    } else {
+      timeIdParaSalvar = parseInt(timeId, 10);
+      if (isNaN(timeIdParaSalvar)) {
+        // Se for "abc" ou algo não numérico
+        return res.status(400).json({ error: 'timeId inválido, deve ser um número ou null.'});
+      }
+    }
+
+    // 4. Salvar no banco
     try {
         const result = await pool.query(
             'UPDATE contas SET time_favorito_id = $1 WHERE email = $2 RETURNING id, nome, email, cpf, time_favorito_id',
-            [timeIdNumerico, email]
+            [timeIdParaSalvar, email] // Usando a nova variável validada
         );
         if (result.rowCount === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
         res.json({ success: 'Time favorito salvo com sucesso!', user: result.rows[0] });
@@ -639,84 +663,340 @@ app.get('/api/copas/:id/inscritos/pdf', async (req, res) => {
 });
 
 
-// ROTAS DA API-FOOTBALL
-const apiConfig = { headers: { 'x-apisports-key': process.env.API_KEY } };
-
+// Rota para buscar campeonatos (ex: Brasileirão Feminino)
 app.get('/api/ligas', async (req, res) => {
-  const cacheKey = 'ligas';
-  const cachedData = cache.get(cacheKey);
-  if (cachedData) return res.json(cachedData);
   try {
-    const response = await axios.get('https://v3.football.api-sports.io/leagues', { params: { country: 'Brazil' }, headers: apiConfig.headers });
-    cache.set(cacheKey, response.data.response);
-    res.json(response.data.response);
+    const result = await pool.query('SELECT * FROM campeonatos ORDER BY ano DESC');
+    res.json(result.rows);
   } catch (error) { res.status(500).json({ error: 'Erro ao buscar ligas.' }); }
 });
 
-app.get('/api/tabela', async (req, res) => {
-  const cacheKey = 'tabela';
-  const cachedData = cache.get(cacheKey);
-  if (cachedData) return res.json(cachedData);
+// Rota para buscar times de uma liga (ex: times do Brasileirão)
+// Mantivemos a rota /api/ligas/:leagueId/times para compatibilidade com o frontend
+app.get('/api/ligas/:leagueId/times', async (req, res) => {
   try {
-    const response = await axios.get('https://v3.football.api-sports.io/standings', { params: { league: '74', season: '2023' }, headers: apiConfig.headers });
-    if (!response.data.response || response.data.response.length === 0) return res.json([]);
-    const tabelaFormatada = response.data.response[0].league.standings[0].map(item => ({ pos: item.rank, time: { nome: item.team.name, logo: item.team.logo }, P: item.points, J: item.all.played, V: item.all.win, E: item.all.draw, D: item.all.lose, GP: item.all.goals.for, GC: item.all.goals.against, SG: item.goalsDiff }));
-    cache.set(cacheKey, tabelaFormatada);
-    res.json(tabelaFormatada);
-  } catch (error) { res.status(500).json({ error: 'Erro ao buscar dados da tabela.' }); }
-});
-  
-app.get('/api/partidas', async (req, res) => {
-    const cacheKey = 'partidas';
-    const cachedData = cache.get(cacheKey);
-    if (cachedData) return res.json(cachedData);
-    try {
-      const response = await axios.get('https://v3.football.api-sports.io/fixtures', { params: { league: '74', season: '2023' }, headers: apiConfig.headers });
-      if (!response.data.response || response.data.response.length === 0) return res.json([]);
-      const partidasFormatadas = response.data.response.map(partida => ({ id: partida.fixture.id, campeonato: partida.league.name, timeCasa: { nome: partida.teams.home.name, logo: partida.teams.home.logo }, timeFora: { nome: partida.teams.away.name, logo: partida.teams.away.logo }, data: new Date(partida.fixture.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), hora: new Date(partida.fixture.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), status: partida.fixture.status.short }));
-      cache.set(cacheKey, partidasFormatadas);
-      res.json(partidasFormatadas);
-    } catch (error) { res.status(500).json({ error: 'Erro ao buscar dados das partidas.' }); }
-});
-    
-app.get('/api/artilharia', async (req, res) => {
-    const cacheKey = 'artilharia';
-    const cachedData = cache.get(cacheKey);
-    if (cachedData) return res.json(cachedData);
-    try {
-      const response = await axios.get('https://v3.football.api-sports.io/players/topscorers', { params: { league: '74', season: '2023' }, headers: apiConfig.headers });
-      if (!response.data.response || response.data.response.length === 0) return res.json([]);
-      const artilhariaFormatada = response.data.response.map(jogador => ({ id: jogador.player.id, jogadora: jogador.player.name, time: jogador.statistics[0].team.name, logo: jogador.statistics[0].team.logo, gols: jogador.statistics[0].goals.total }));
-      cache.set(cacheKey, artilhariaFormatada);
-      res.json(artilhariaFormatada);
-    } catch (error) { res.status(500).json({ error: 'Erro ao buscar dados da artilharia.' }); }
+    // Por enquanto, apenas retorna todos os times.
+    // No futuro, podemos adicionar `campeonato_id` na tabela `times`
+    const result = await pool.query('SELECT * FROM times ORDER BY nome');
+    res.json(result.rows.map(t => ({ team: { id: t.id, name: t.nome, logo: t.logo_url } })));
+  } catch (error) { res.status(500).json({ error: 'Erro ao buscar times da liga.' }); }
 });
 
-app.get('/api/ligas/:leagueId/times', async (req, res) => {
-    const { leagueId } = req.params;
-    const cacheKey = `ligas-${leagueId}-times`;
-    const cachedData = cache.get(cacheKey);
-    if (cachedData) return res.json(cachedData);
-    const options = { method: 'GET', url: 'https://v3.football.api-sports.io/teams', params: { league: leagueId, season: '2023' }, headers: apiConfig.headers };
-    try {
-      const response = await axios.request(options);
-      cache.set(cacheKey, response.data.response);
-      res.json(response.data.response);
-    } catch (error) { res.status(500).json({ error: 'Erro ao buscar times da liga.' }); }
+// Rota para buscar a tabela de classificação do campeonato ativo
+app.get('/api/tabela', async (req, res) => {
+  try {
+    const campeonatoId = await getActiveCampeonatoId();
+    if (!campeonatoId) return res.json([]);
+
+    const query = `
+      SELECT 
+        t.*, 
+        tm.nome, 
+        tm.logo_url
+      FROM tabela t
+      JOIN times tm ON t.time_id = tm.id
+      WHERE t.campeonato_id = $1
+      ORDER BY t.pontos DESC, t.vitorias DESC, t.saldo_gols DESC;
+    `;
+    const result = await pool.query(query, [campeonatoId]);
+    
+    // Formata a resposta para ser idêntica à da API antiga (para o frontend não quebrar)
+    const tabelaFormatada = result.rows.map((item, index) => ({
+      pos: index + 1,
+      time: { nome: item.nome, logo: item.logo_url },
+      P: item.pontos,
+      J: item.jogos,
+      V: item.vitorias,
+      E: item.empates,
+      D: item.derrotas,
+      GP: item.gols_pro,
+      GC: item.gols_contra,
+      SG: item.saldo_gols
+    }));
+    
+    res.json(tabelaFormatada);
+  } catch (error) { 
+    console.error("Erro ao buscar tabela:", error);
+    res.status(500).json({ error: 'Erro ao buscar dados da tabela.' }); 
+  }
 });
-  
+
+// Rota para buscar as partidas do campeonato ativo
+app.get('/api/partidas', async (req, res) => {
+    try {
+      const campeonatoId = await getActiveCampeonatoId();
+      if (!campeonatoId) return res.json([]);
+
+      const query = `
+        SELECT 
+          p.id,
+          camp.nome as campeonato,
+          casa.nome as time_casa_nome,
+          casa.logo_url as time_casa_logo,
+          fora.nome as time_fora_nome,
+          fora.logo_url as time_fora_logo,
+          p.data,
+          p.status
+        FROM partidas p
+        JOIN campeonatos camp ON p.campeonato_id = camp.id
+        JOIN times casa ON p.time_casa_id = casa.id
+        JOIN times fora ON p.time_fora_id = fora.id
+        WHERE p.campeonato_id = $1
+        ORDER BY p.data;
+      `;
+      const result = await pool.query(query, [campeonatoId]);
+      
+      // Formata a resposta para ser idêntica à da API antiga
+      const partidasFormatadas = result.rows.map(partida => ({
+        id: partida.id,
+        campeonato: partida.campeonato,
+        timeCasa: { nome: partida.time_casa_nome, logo: partida.time_casa_logo },
+        timeFora: { nome: partida.time_fora_nome, logo: partida.time_fora_logo },
+        data: new Date(partida.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        hora: new Date(partida.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        status: partida.status
+      }));
+
+      res.json(partidasFormatadas);
+    } catch (error) { 
+      console.error("Erro ao buscar partidas:", error);
+      res.status(500).json({ error: 'Erro ao buscar dados das partidas.' }); 
+    }
+});
+
+// Rota para buscar a artilharia do campeonato ativo
+app.get('/api/artilharia', async (req, res) => {
+    try {
+      const campeonatoId = await getActiveCampeonatoId();
+      if (!campeonatoId) return res.json([]);
+
+      const query = `
+        SELECT 
+          a.id,
+          a.nome_jogadora,
+          a.gols,
+          tm.nome as time_nome,
+          tm.logo_url as time_logo
+        FROM artilharia a
+        JOIN times tm ON a.time_id = tm.id
+        WHERE a.campeonato_id = $1
+        ORDER BY a.gols DESC;
+      `;
+      const result = await pool.query(query, [campeonatoId]);
+
+      // Formata a resposta para ser idêntica à da API antiga
+      const artilhariaFormatada = result.rows.map(jogador => ({
+        id: jogador.id,
+        jogadora: jogador.nome_jogadora,
+        time: jogador.time_nome,
+        logo: jogador.time_logo,
+        gols: jogador.gols
+      }));
+      
+      res.json(artilhariaFormatada);
+    } catch (error) { 
+      console.error("Erro ao buscar artilharia:", error);
+      res.status(500).json({ error: 'Erro ao buscar dados da artilharia.' }); 
+    }
+});
+
+// Rota para buscar partidas de um time específico (para o Perfil)
 app.get('/api/times/:timeId/partidas', async (req, res) => {
     const { timeId } = req.params;
-    const cacheKey = `time-${timeId}-partidas`;
-    const cachedData = cache.get(cacheKey);
-    if (cachedData) return res.json(cachedData);
-    const options = { method: 'GET', url: 'https://v3.football.api-sports.io/fixtures', params: { team: timeId, season: '2023' }, headers: apiConfig.headers };
     try {
-      const response = await axios.request(options);
-      const partidasFormatadas = response.data.response.map(partida => ({ id: partida.fixture.id, campeonato: partida.league.name, timeCasa: { nome: partida.teams.home.name, logo: partida.teams.home.logo }, timeFora: { nome: partida.teams.away.name, logo: partida.teams.away.logo }, data: new Date(partida.fixture.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), hora: new Date(partida.fixture.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), }));
-      cache.set(cacheKey, partidasFormatadas);
+      const query = `
+        SELECT 
+          p.id,
+          camp.nome as campeonato,
+          casa.nome as time_casa_nome,
+          casa.logo_url as time_casa_logo,
+          fora.nome as time_fora_nome,
+          fora.logo_url as time_fora_logo,
+          p.data,
+          p.status
+        FROM partidas p
+        JOIN campeonatos camp ON p.campeonato_id = camp.id
+        JOIN times casa ON p.time_casa_id = casa.id
+        JOIN times fora ON p.time_fora_id = fora.id
+        WHERE p.time_casa_id = $1 OR p.time_fora_id = $1
+        ORDER BY p.data;
+      `;
+      const result = await pool.query(query, [timeId]);
+      
+      const partidasFormatadas = result.rows.map(partida => ({
+        id: partida.id,
+        campeonato: partida.campeonato,
+        timeCasa: { nome: partida.time_casa_nome, logo: partida.time_casa_logo },
+        timeFora: { nome: partida.time_fora_nome, logo: partida.time_fora_logo },
+        data: new Date(partida.data).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+        hora: new Date(partida.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      }));
+      
       res.json(partidasFormatadas);
-    } catch (error) { res.status(500).json({ error: 'Erro ao buscar partidas do time.' }); }
+    } catch (error) { 
+      console.error("Erro ao buscar partidas do time:", error);
+      res.status(500).json({ error: 'Erro ao buscar partidas do time.' }); 
+    }
+});
+
+
+// ===== NOVAS ROTAS DE ADMIN (PARA ALIMENTAR O BANCO) =====
+
+// --- Campeonatos ---
+app.post('/api/admin/campeonatos', async (req, res) => {
+  const { nome, ano, ativo } = req.body;
+  try {
+    // Se 'ativo' for true, desativa todos os outros
+    if (ativo) {
+      await pool.query('UPDATE campeonatos SET ativo = false');
+    }
+    const result = await pool.query(
+      'INSERT INTO campeonatos (nome, ano, ativo) VALUES ($1, $2, $3) RETURNING *',
+      [nome, ano, ativo]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// --- Times ---
+app.post('/api/admin/times', async (req, res) => {
+  const { id, nome, logo_url } = req.body; // ID da API antiga é obrigatório
+  try {
+    const result = await pool.query(
+      'INSERT INTO times (id, nome, logo_url) VALUES ($1, $2, $3) RETURNING *',
+      [id, nome, logo_url]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// --- Partidas ---
+app.post('/api/admin/partidas', async (req, res) => {
+  const { campeonato_id, time_casa_id, time_fora_id, data, status } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO partidas (campeonato_id, time_casa_id, time_fora_id, data, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [campeonato_id, time_casa_id, time_fora_id, data, status]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// --- Tabela ---
+app.post('/api/admin/tabela', async (req, res) => {
+  // Rota para criar ou atualizar uma entrada na tabela
+  const { campeonato_id, time_id, pontos, jogos, vitorias, empates, derrotas, gols_pro, gols_contra, saldo_gols } = req.body;
+  try {
+    const query = `
+      INSERT INTO tabela (campeonato_id, time_id, pontos, jogos, vitorias, empates, derrotas, gols_pro, gols_contra, saldo_gols)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      ON CONFLICT (campeonato_id, time_id) 
+      DO UPDATE SET
+        pontos = $3, jogos = $4, vitorias = $5, empates = $6, derrotas = $7, gols_pro = $8, gols_contra = $9, saldo_gols = $10
+      RETURNING *;
+    `;
+    const values = [campeonato_id, time_id, pontos, jogos, vitorias, empates, derrotas, gols_pro, gols_contra, saldo_gols];
+    const result = await pool.query(query, values);
+    res.status(201).json(result.rows[0]);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// --- Artilharia ---
+app.post('/api/admin/artilharia', async (req, res) => {
+  const { campeonato_id, time_id, nome_jogadora, gols } = req.body;
+  try {
+    const result = await pool.query(
+      'INSERT INTO artilharia (campeonato_id, time_id, nome_jogadora, gols) VALUES ($1, $2, $3, $4) RETURNING *',
+      [campeonato_id, time_id, nome_jogadora, gols]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) { res.status(500).json({ error: error.message }); }
+});
+
+// NOVA ROTA PARA ADICIONAR VÁRIOS TIMES DE UMA VEZ
+app.post('/api/admin/times/bulk', async (req, res) => {
+  const times = req.body; // Espera um array de times
+
+  if (!Array.isArray(times) || times.length === 0) {
+    return res.status(400).json({ error: 'O corpo da requisição deve ser um array de times.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN'); // Inicia a transação
+
+    let timesAdicionados = 0;
+
+    for (const time of times) {
+      const { id, nome, logo_url } = time;
+      if (!id || !nome || !logo_url) {
+        console.warn('Ignorando time com dados incompletos:', time);
+        continue;
+      }
+      
+      // ON CONFLICT(id) DO NOTHING: Se o time já existir, ele não faz nada e não dá erro.
+      const result = await client.query(
+        'INSERT INTO times (id, nome, logo_url) VALUES ($1, $2, $3) ON CONFLICT(id) DO NOTHING',
+        [id, nome, logo_url]
+      );
+      timesAdicionados += result.rowCount; // rowCount será 1 se inseriu, 0 se deu conflito
+    }
+
+    await client.query('COMMIT'); // Confirma a transação
+    res.status(201).json({ success: `${timesAdicionados} de ${times.length} times foram adicionados com sucesso.` });
+  } catch (error) {
+    await client.query('ROLLBACK'); // Desfaz tudo em caso de erro
+    console.error("Erro no cadastro em massa de times:", error);
+    res.status(500).json({ error: 'Erro interno do servidor ao cadastrar times.' });
+  } finally {
+    client.release();
+  }
+});
+
+app.post('/api/admin/partidas/bulk', async (req, res) => {
+  const partidas = req.body; // Espera um array de partidas
+
+  if (!Array.isArray(partidas) || partidas.length === 0) {
+    return res.status(400).json({ error: 'O corpo da requisição deve ser um array de partidas.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN'); // Inicia a transação
+
+    for (const partida of partidas) {
+      const { 
+        campeonato_id, 
+        time_casa_id, 
+        time_fora_id, 
+        data, 
+        status, 
+        gols_casa, 
+        gols_fora 
+      } = partida;
+      
+      // Validação simples
+      if (!campeonato_id || !time_casa_id || !time_fora_id || !data || !status) {
+        throw new Error(`Partida com dados incompletos: ${JSON.stringify(partida)}`);
+      }
+
+      await client.query(
+        `INSERT INTO partidas 
+         (campeonato_id, time_casa_id, time_fora_id, data, status, gols_casa, gols_fora) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [campeonato_id, time_casa_id, time_fora_id, data, status, gols_casa, gols_fora]
+      );
+    }
+
+    await client.query('COMMIT'); // Confirma a transação
+    res.status(201).json({ success: `${partidas.length} partidas foram adicionadas com sucesso.` });
+  } catch (error) {
+    await client.query('ROLLBACK'); // Desfaz tudo em caso de erro
+    console.error("Erro no cadastro em massa de partidas:", error);
+    res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
+  } finally {
+    client.release();
+  }
 });
 
 

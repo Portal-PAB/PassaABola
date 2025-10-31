@@ -2,10 +2,8 @@
 require('dotenv').config();
 const { Pool } = require('pg');
 
-// Configura a conexão usando a variável de ambiente DATABASE_URL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  // Adicione a configuração SSL para conexões com o Render
   ssl: {
     rejectUnauthorized: false
   }
@@ -22,7 +20,7 @@ const queries = [
     time_favorito_id INTEGER
   );`,
 
-  // Tabela para as Copas
+  // Tabela para as Copas (Eventos PAB)
   `CREATE TABLE IF NOT EXISTS copas (
     id BIGINT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
@@ -32,7 +30,7 @@ const queries = [
     status VARCHAR(20) DEFAULT 'fechada'
   );`,
 
-  // Tabela para os Encontros
+  // Tabela para os Encontros (Eventos PAB)
   `CREATE TABLE IF NOT EXISTS encontros (
     id BIGINT PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
@@ -51,7 +49,7 @@ const queries = [
     cpf VARCHAR(14),
     email VARCHAR(100),
     telefone VARCHAR(20),
-    jogadoras JSONB, -- Coluna JSONB para armazenar a lista de jogadoras
+    jogadoras JSONB,
     data_inscricao TIMESTAMPTZ DEFAULT NOW()
   );`,
 
@@ -83,20 +81,68 @@ const queries = [
     titulo VARCHAR(255) NOT NULL,
     resumo TEXT,
     conteudo TEXT NOT NULL,
-    imagens TEXT[], -- Array de strings para as URLs das imagens
+    imagens TEXT[],
     destaque BOOLEAN DEFAULT false
+  );`,
+
+  // --- NOVAS TABELAS PARA SUBSTITUIR A API DE FUTEBOL ---
+
+  `CREATE TABLE IF NOT EXISTS campeonatos (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    ano INTEGER,
+    ativo BOOLEAN DEFAULT false
+  );`,
+
+  `CREATE TABLE IF NOT EXISTS times (
+    id INTEGER PRIMARY KEY, -- Importante: Este será o ID da API antiga (ex: 74)
+    nome VARCHAR(255) NOT NULL,
+    logo_url TEXT
+  );`,
+
+  `CREATE TABLE IF NOT EXISTS partidas (
+    id SERIAL PRIMARY KEY,
+    campeonato_id INTEGER REFERENCES campeonatos(id),
+    time_casa_id INTEGER REFERENCES times(id),
+    time_fora_id INTEGER REFERENCES times(id),
+    data TIMESTAMPTZ,
+    status VARCHAR(50),
+    gols_casa INTEGER DEFAULT 0,
+    gols_fora INTEGER DEFAULT 0
+  );`,
+
+  `CREATE TABLE IF NOT EXISTS tabela (
+    id SERIAL PRIMARY KEY,
+    campeonato_id INTEGER REFERENCES campeonatos(id),
+    time_id INTEGER REFERENCES times(id) ON DELETE CASCADE,
+    pontos INTEGER DEFAULT 0,
+    jogos INTEGER DEFAULT 0,
+    vitorias INTEGER DEFAULT 0,
+    empates INTEGER DEFAULT 0,
+    derrotas INTEGER DEFAULT 0,
+    gols_pro INTEGER DEFAULT 0,
+    gols_contra INTEGER DEFAULT 0,
+    saldo_gols INTEGER DEFAULT 0,
+    UNIQUE(campeonato_id, time_id)
+  );`,
+  
+  `CREATE TABLE IF NOT EXISTS artilharia (
+    id SERIAL PRIMARY KEY,
+    campeonato_id INTEGER REFERENCES campeonatos(id),
+    time_id INTEGER REFERENCES times(id),
+    nome_jogadora VARCHAR(255) NOT NULL,
+    gols INTEGER DEFAULT 0
   );`
 ];
 
-// Função que executa as queries para criar as tabelas
 async function setupDatabase() {
   const client = await pool.connect();
   try {
-    console.log('Iniciando a criação das tabelas no banco de dados...');
+    console.log('Iniciando a criação/atualização das tabelas no banco de dados...');
     for (const query of queries) {
       await client.query(query);
     }
-    console.log('Tabelas criadas com sucesso!');
+    console.log('Tabelas criadas/atualizadas com sucesso!');
   } catch (error) {
     console.error('Ocorreu um erro ao criar as tabelas:', error);
   } finally {

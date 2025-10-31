@@ -41,7 +41,7 @@ function Perfil() {
     try {
         const [resInscricoes, resTimes] = await Promise.all([
             fetch(`${API_URL}/api/usuario/minhas-inscricoes/${user.email}`),
-            fetch(`${API_URL}/api/ligas/74/times`)
+            fetch(`${API_URL}/api/ligas/74/times`) // Esta rota precisará ser atualizada para buscar os times do seu DB
         ]);
         const dadosInscricoes = await resInscricoes.json();
         const dadosTimes = await resTimes.json();
@@ -73,8 +73,9 @@ function Perfil() {
     fetchProfileData();
   }, [user, fetchProfileData]);
 
-  const handleSalvarTime = async () => {
-    const idParaSalvar = timeSelecionado || null;
+  // ATUALIZADO: A função agora aceita 'idParaSalvar' como um argumento
+  const handleSalvarTime = async (idParaSalvar) => {
+    // const idParaSalvar = timeSelecionado || null; // LINHA REMOVIDA
     try {
         const response = await fetch(`${API_URL}/api/usuario/favoritar-time`, {
             method: 'POST',
@@ -169,7 +170,8 @@ function Perfil() {
                 <option value="">Selecione um time...</option>
                 {times.map(time => <option key={time.id} value={time.id}>{time.name}</option>)}
               </select>
-              <button onClick={handleSalvarTime} disabled={!timeSelecionado} className="py-2 px-6 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 disabled:bg-gray-400">Salvar</button>
+              {/* ATUALIZADO: O onClick agora passa o 'timeSelecionado' como argumento */}
+              <button onClick={() => handleSalvarTime(timeSelecionado)} disabled={!timeSelecionado} className="py-2 px-6 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 disabled:bg-gray-400">Salvar</button>
             </div>
           ) : (
             <div>
@@ -180,7 +182,8 @@ function Perfil() {
                       <img src={timeFavoritoInfo?.logo} alt="Logo" className="w-12 h-12" />
                       <h3 className="text-3xl font-bold">{timeFavoritoInfo?.name}</h3>
                     </div>
-                    <button onClick={() => { setTimeSelecionado(null); handleSalvarTime(); }} className="text-sm text-red-500 hover:underline">Trocar de time</button>
+                    {/* ATUALIZADO: O onClick agora passa 'null' como argumento */}
+                    <button onClick={() => { setTimeSelecionado(null); handleSalvarTime(null); }} className="text-sm text-red-500 hover:underline">Trocar de time</button>
                   </div>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="space-y-6">
