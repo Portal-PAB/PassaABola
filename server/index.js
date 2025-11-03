@@ -840,7 +840,85 @@ app.get('/api/times/:timeId/partidas', async (req, res) => {
 });
 
 
-// ===== NOVAS ROTAS DE ADMIN (PARA ALIMENTAR O BANCO) =====
+app.get('/api/admin/dashboard-stats', async (req, res) => {
+  try {
+    // 1. Pega os IDs dos eventos abertos
+    const copaAberta = await getOpenEntity('copas');
+    const encontroAberto = await getOpenEntity('encontros');
+
+    // 2. Prepara todas as consultas
+    const totalUsuariosQuery = pool.query('SELECT COUNT(*) FROM contas');
+    
+    const inscritosEncontroQuery = pool.query(
+      'SELECT COUNT(*) FROM inscricoes_encontro WHERE encontro_id = $1',
+      [encontroAberto?.id || null]
+    );
+    
+    const equipesCopaQuery = pool.query(
+      'SELECT COUNT(*) FROM equipes WHERE copa_id = $1',
+      [copaAberta?.id || null]
+    );
+    
+    const avulsasCopaQuery = pool.query(
+      'SELECT COUNT(*) FROM jogadoras_avulsas WHERE copa_id = $1',
+      [copaAberta?.id || null]
+    );
+
+    // 3. Roda todas em paralelo
+    const [
+      totalUsuariosRes,
+      inscritosEncontroRes,
+      equipesCopaRes,
+      avulsasCopaRes
+    ] = await Promise.all([
+      totalUsuariosQuery,
+      inscritosEncontroQuery,
+      equipesCopaQuery,
+      avulsasCopaQuery
+    ]);
+
+    // 4. Monta o objeto de resposta
+    const stats = {
+      totalUsuarios: parseInt(totalUsuariosRes.rows[0].count, 10),
+      inscritosEncontro: parseInt(inscritosEncontroRes.rows[0].count, 10),
+      limiteEncontro: encontroAberto?.limite_inscritos || 0,
+      equipesCopa: parseInt(equipesCopaRes.rows[0].count, 10),
+      limiteCopa: copaAberta?.limite_equipes || 0,
+      avulsasCopa: parseInt(avulsasCopaRes.rows[0].count, 10)
+    };
+
+    res.json(stats);
+
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas do dashboard:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+app.get('/api/admin/dashboard-favoritos', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        t.nome, 
+        t.logo_url, 
+        COUNT(c.id) AS "contagem"
+      FROM contas c
+      JOIN times t ON c.time_favorito_id = t.id
+      WHERE c.time_favorito_id IS NOT NULL
+      GROUP BY t.nome, t.logo_url
+      ORDER BY "contagem" DESC
+      LIMIT 5;
+    `;
+    const result = await pool.query(query);
+    res.json(result.rows);
+    
+  } catch (error) {
+    console.error('Erro ao buscar top times favoritos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor.' });
+  }
+});
+
+
 
 // --- Campeonatos ---
 app.post('/api/admin/campeonatos', async (req, res) => {
@@ -999,6 +1077,104 @@ app.post('/api/admin/partidas/bulk', async (req, res) => {
   }
 });
 
+
+app.post('/api/admin/tabela/bulk', async (req, res) => {
+  const tabelaEntries = req.body; // Espera um array de entradas da tabela
+
+  if (!Array.isArray(tabelaEntries) || tabelaEntries.length === 0) {
+    return res.status(400).json({ error: 'O corpo da requisição deve ser um array de entradas da tabela.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN'); // Inicia a transação
+
+    for (const entry of tabelaEntries) {
+      const { 
+        campeonato_id, time_id, pontos, jogos, vitorias, empates, derrotas, 
+        gols_pro, gols_contra, saldo_gols 
+      } = entry;
+
+      // Validação
+      if (campeonato_id === undefined || time_id === undefined) {
+        throw new Error(`Entrada da tabela com dados incompletos: ${JSON.stringify(entry)}`);
+      }
+
+      const query = `
+        INSERT INTO tabela (campeonato_id, time_id, pontos, jogos, vitorias, empates, derrotas, gols_pro, gols_contra, saldo_gols)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        ON CONFLICT (campeonato_id, time_id) 
+        DO UPDATE SET
+          pontos = $3, jogos = $4, vitorias = $5, empates = $6, derrotas = $7, 
+          gols_pro = $8, gols_contra = $9, saldo_gols = $10
+      `;
+      const values = [
+        campeonato_id, time_id, 
+        pontos || 0, jogos || 0, vitorias || 0, empates || 0, derrotas || 0, 
+        gols_pro || 0, gols_contra || 0, saldo_gols || 0
+      ];
+      
+      await client.query(query, values);
+    }
+
+    await client.query('COMMIT'); // Confirma a transação
+    res.status(201).json({ success: `${tabelaEntries.length} entradas da tabela foram processadas com sucesso.` });
+  } catch (error) {
+    await client.query('ROLLBACK'); // Desfaz tudo em caso de erro
+    console.error("Erro no cadastro em massa da tabela:", error);
+    res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
+  } finally {
+    client.release();
+  }
+});
+
+
+app.post('/api/admin/artilharia/bulk', async (req, res) => {
+  const artilhariaEntries = req.body; // Espera um array de entradas
+
+  if (!Array.isArray(artilhariaEntries) || artilhariaEntries.length === 0) {
+    return res.status(400).json({ error: 'O corpo da requisição deve ser um array de artilheiras.' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN'); // Inicia a transação
+
+    if (artilhariaEntries.length > 0) {
+      const campeonatoId = artilhariaEntries[0].campeonato_id;
+      await client.query('DELETE FROM artilharia WHERE campeonato_id = $1', [campeonatoId]);
+    }
+
+    // Insere os novos dados
+    for (const entry of artilhariaEntries) {
+      const { 
+        campeonato_id, time_id, nome_jogadora, gols 
+      } = entry;
+
+      // Validação
+      if (campeonato_id === undefined || time_id === undefined || !nome_jogadora || gols === undefined) {
+        throw new Error(`Entrada de artilharia com dados incompletos: ${JSON.stringify(entry)}`);
+      }
+
+      const query = `
+        INSERT INTO artilharia (campeonato_id, time_id, nome_jogadora, gols)
+        VALUES ($1, $2, $3, $4)
+      `;
+      const values = [campeonato_id, time_id, nome_jogadora, gols];
+      
+      await client.query(query, values);
+    }
+
+    await client.query('COMMIT'); // Confirma a transação
+    res.status(201).json({ success: `${artilhariaEntries.length} entradas de artilharia foram processadas com sucesso.` });
+  } catch (error) {
+    await client.query('ROLLBACK'); // Desfaz tudo em caso de erro
+    console.error("Erro no cadastro em massa da artilharia:", error);
+    res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
+  } finally {
+    client.release();
+  }
+});
 
 // INICIA O SERVIDOR
 app.listen(PORT, () => {
