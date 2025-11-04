@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -62,13 +62,13 @@ function InscricaoCopa() {
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-8">
           Formulário de Inscrição - Copa Passa a Bola
         </h1>
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <fieldset className="space-y-6 border-b-2 pb-6 border-gray-200">
-             <legend className="text-xl font-semibold text-gray-700 mb-4">Dados da Equipe</legend>
-             <div>
-                <label htmlFor="nomeTime" className="block text-sm font-medium text-gray-700 mb-1">Nome do time:</label>
-                <input type="text" id="nomeTime" value={nomeTime} onChange={(e) => setNomeTime(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" required />
+            <legend className="text-xl font-semibold text-gray-700 mb-4">Dados da Equipe</legend>
+            <div>
+              <label htmlFor="nomeTime" className="block text-sm font-medium text-gray-700 mb-1">Nome do time:</label>
+              <input type="text" id="nomeTime" value={nomeTime} onChange={(e) => setNomeTime(e.target.value)} className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" required />
             </div>
           </fieldset>
 
@@ -113,16 +113,16 @@ function InscricaoCopa() {
               </div>
             ))}
 
-            <button 
-              type="button" 
-              onClick={addJogadora} 
+            <button
+              type="button"
+              onClick={addJogadora}
               className="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-300 transition duration-300 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
               disabled={jogadoras.length >= MAX_JOGADORAS}
             >
               + Adicionar mais uma jogadora
             </button>
             {jogadoras.length >= MAX_JOGADORAS && (
-                <p className="text-center text-sm text-red-600 mt-2">Você atingiu o número máximo de 15 jogadoras.</p>
+              <p className="text-center text-sm text-red-600 mt-2">Você atingiu o número máximo de 15 jogadoras.</p>
             )}
           </fieldset>
 

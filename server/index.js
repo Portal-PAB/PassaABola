@@ -20,26 +20,20 @@ const pool = new Pool({
   }
 });
 
-// Helper para pegar o campeonato ativo
 const getActiveCampeonatoId = async () => {
     const result = await pool.query(`SELECT id FROM campeonatos WHERE ativo = true LIMIT 1`);
     if (result.rows.length === 0) {
-        // Se nenhum estiver ativo, pega o último criado
         const last = await pool.query(`SELECT id FROM campeonatos ORDER BY id DESC LIMIT 1`);
         return last.rows.length > 0 ? last.rows[0].id : null;
     }
     return result.rows[0].id;
 };
 
-// Helper para pegar copa/encontro aberto (PAB)
 const getOpenEntity = async (tableName) => {
     const result = await pool.query(`SELECT * FROM ${tableName} WHERE status = 'aberta' LIMIT 1`);
     return result.rows.length > 0 ? result.rows[0] : null;
 };
 
-
-// ===== ROTAS DE AUTENTICAÇÃO =====
-// (Sem alterações)
 app.post('/cadastro', async (req, res) => {
   const { nome, email, senha, cpf } = req.body;
   if (!nome || !email || !senha || !cpf) return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
@@ -88,17 +82,17 @@ app.post('/api/copas', async (req, res) => {
 
     const client = await pool.connect();
     try {
-        await client.query('BEGIN'); // Inicia transação
+        await client.query('BEGIN');
         await client.query("UPDATE copas SET status = 'fechada'");
         const novaCopa = { id: Date.now(), nome, data, local, limiteEquipes, status: 'aberta' };
         await client.query(
             'INSERT INTO copas (id, nome, data, local, limite_equipes, status) VALUES ($1, $2, $3, $4, $5, $6)',
             [novaCopa.id, novaCopa.nome, novaCopa.data, novaCopa.local, novaCopa.limiteEquipes, novaCopa.status]
         );
-        await client.query('COMMIT'); // Finaliza transação
+        await client.query('COMMIT');
         res.status(201).json({ success: 'Copa criada e aberta para inscrições!', copa: novaCopa });
     } catch (error) {
-        await client.query('ROLLBACK'); // Desfaz em caso de erro
+        await client.query('ROLLBACK');
         console.error('Erro ao criar copa:', error);
         res.status(500).json({ error: 'Erro interno do servidor.' });
     } finally {
@@ -433,35 +427,30 @@ app.get('/api/usuario/:email', async (req, res) => {
 });
 
 app.post('/api/usuario/favoritar-time', async (req, res) => {
-    const { email, timeId } = req.body; // timeId pode ser um número (ex: 1005) ou null
+    const { email, timeId } = req.body;
 
-    // 1. Validar email
     if (!email) {
       return res.status(400).json({ error: 'Email é obrigatório.'});
     }
-    
-    // 2. Validar timeId (não pode estar faltando)
+
     if (timeId === undefined) {
       return res.status(400).json({ error: 'O campo timeId é obrigatório (pode ser null).'});
     }
 
-    // 3. Processar e validar o timeId
     let timeIdParaSalvar;
     if (timeId === null) {
-      timeIdParaSalvar = null; // Permitido (o usuário está limpando o time)
+      timeIdParaSalvar = null;
     } else {
       timeIdParaSalvar = parseInt(timeId, 10);
       if (isNaN(timeIdParaSalvar)) {
-        // Se for "abc" ou algo não numérico
         return res.status(400).json({ error: 'timeId inválido, deve ser um número ou null.'});
       }
     }
 
-    // 4. Salvar no banco
     try {
         const result = await pool.query(
             'UPDATE contas SET time_favorito_id = $1 WHERE email = $2 RETURNING id, nome, email, cpf, time_favorito_id',
-            [timeIdParaSalvar, email] // Usando a nova variável validada
+            [timeIdParaSalvar, email]
         );
         if (result.rowCount === 0) return res.status(404).json({ error: 'Usuário não encontrado.' });
         res.json({ success: 'Time favorito salvo com sucesso!', user: result.rows[0] });
@@ -662,8 +651,8 @@ app.get('/api/copas/:id/inscritos/pdf', async (req, res) => {
     } catch (error) { res.status(500).send('Erro ao gerar arquivo PDF.'); }
 });
 
+// Rota para buscar campeonatos
 
-// Rota para buscar campeonatos (ex: Brasileirão Feminino)
 app.get('/api/ligas', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM campeonatos ORDER BY ano DESC');
@@ -671,18 +660,13 @@ app.get('/api/ligas', async (req, res) => {
   } catch (error) { res.status(500).json({ error: 'Erro ao buscar ligas.' }); }
 });
 
-// Rota para buscar times de uma liga (ex: times do Brasileirão)
-// Mantivemos a rota /api/ligas/:leagueId/times para compatibilidade com o frontend
 app.get('/api/ligas/:leagueId/times', async (req, res) => {
   try {
-    // Por enquanto, apenas retorna todos os times.
-    // No futuro, podemos adicionar `campeonato_id` na tabela `times`
     const result = await pool.query('SELECT * FROM times ORDER BY nome');
     res.json(result.rows.map(t => ({ team: { id: t.id, name: t.nome, logo: t.logo_url } })));
   } catch (error) { res.status(500).json({ error: 'Erro ao buscar times da liga.' }); }
 });
 
-// Rota para buscar a tabela de classificação do campeonato ativo
 app.get('/api/tabela', async (req, res) => {
   try {
     const campeonatoId = await getActiveCampeonatoId();
@@ -699,8 +683,7 @@ app.get('/api/tabela', async (req, res) => {
       ORDER BY t.pontos DESC, t.vitorias DESC, t.saldo_gols DESC;
     `;
     const result = await pool.query(query, [campeonatoId]);
-    
-    // Formata a resposta para ser idêntica à da API antiga (para o frontend não quebrar)
+
     const tabelaFormatada = result.rows.map((item, index) => ({
       pos: index + 1,
       time: { nome: item.nome, logo: item.logo_url },
@@ -722,6 +705,7 @@ app.get('/api/tabela', async (req, res) => {
 });
 
 // Rota para buscar as partidas do campeonato ativo
+
 app.get('/api/partidas', async (req, res) => {
     try {
       const campeonatoId = await getActiveCampeonatoId();
@@ -745,8 +729,6 @@ app.get('/api/partidas', async (req, res) => {
         ORDER BY p.data;
       `;
       const result = await pool.query(query, [campeonatoId]);
-      
-      // Formata a resposta para ser idêntica à da API antiga
       const partidasFormatadas = result.rows.map(partida => ({
         id: partida.id,
         campeonato: partida.campeonato,
@@ -764,7 +746,8 @@ app.get('/api/partidas', async (req, res) => {
     }
 });
 
-// Rota para buscar a artilharia do campeonato ativo
+// Rota para buscar a artilharia
+
 app.get('/api/artilharia', async (req, res) => {
     try {
       const campeonatoId = await getActiveCampeonatoId();
@@ -783,8 +766,6 @@ app.get('/api/artilharia', async (req, res) => {
         ORDER BY a.gols DESC;
       `;
       const result = await pool.query(query, [campeonatoId]);
-
-      // Formata a resposta para ser idêntica à da API antiga
       const artilhariaFormatada = result.rows.map(jogador => ({
         id: jogador.id,
         jogadora: jogador.nome_jogadora,
@@ -800,7 +781,8 @@ app.get('/api/artilharia', async (req, res) => {
     }
 });
 
-// Rota para buscar partidas de um time específico (para o Perfil)
+// Rota para buscar partidas de um time específico
+
 app.get('/api/times/:timeId/partidas', async (req, res) => {
     const { timeId } = req.params;
     try {
@@ -842,11 +824,9 @@ app.get('/api/times/:timeId/partidas', async (req, res) => {
 
 app.get('/api/admin/dashboard-stats', async (req, res) => {
   try {
-    // 1. Pega os IDs dos eventos abertos
     const copaAberta = await getOpenEntity('copas');
     const encontroAberto = await getOpenEntity('encontros');
 
-    // 2. Prepara todas as consultas
     const totalUsuariosQuery = pool.query('SELECT COUNT(*) FROM contas');
     
     const inscritosEncontroQuery = pool.query(
@@ -864,7 +844,6 @@ app.get('/api/admin/dashboard-stats', async (req, res) => {
       [copaAberta?.id || null]
     );
 
-    // 3. Roda todas em paralelo
     const [
       totalUsuariosRes,
       inscritosEncontroRes,
@@ -877,7 +856,6 @@ app.get('/api/admin/dashboard-stats', async (req, res) => {
       avulsasCopaQuery
     ]);
 
-    // 4. Monta o objeto de resposta
     const stats = {
       totalUsuarios: parseInt(totalUsuariosRes.rows[0].count, 10),
       inscritosEncontro: parseInt(inscritosEncontroRes.rows[0].count, 10),
@@ -918,82 +896,10 @@ app.get('/api/admin/dashboard-favoritos', async (req, res) => {
   }
 });
 
+// Adicionar Times
 
-
-// --- Campeonatos ---
-app.post('/api/admin/campeonatos', async (req, res) => {
-  const { nome, ano, ativo } = req.body;
-  try {
-    // Se 'ativo' for true, desativa todos os outros
-    if (ativo) {
-      await pool.query('UPDATE campeonatos SET ativo = false');
-    }
-    const result = await pool.query(
-      'INSERT INTO campeonatos (nome, ano, ativo) VALUES ($1, $2, $3) RETURNING *',
-      [nome, ano, ativo]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
-// --- Times ---
-app.post('/api/admin/times', async (req, res) => {
-  const { id, nome, logo_url } = req.body; // ID da API antiga é obrigatório
-  try {
-    const result = await pool.query(
-      'INSERT INTO times (id, nome, logo_url) VALUES ($1, $2, $3) RETURNING *',
-      [id, nome, logo_url]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
-// --- Partidas ---
-app.post('/api/admin/partidas', async (req, res) => {
-  const { campeonato_id, time_casa_id, time_fora_id, data, status } = req.body;
-  try {
-    const result = await pool.query(
-      'INSERT INTO partidas (campeonato_id, time_casa_id, time_fora_id, data, status) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [campeonato_id, time_casa_id, time_fora_id, data, status]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
-// --- Tabela ---
-app.post('/api/admin/tabela', async (req, res) => {
-  // Rota para criar ou atualizar uma entrada na tabela
-  const { campeonato_id, time_id, pontos, jogos, vitorias, empates, derrotas, gols_pro, gols_contra, saldo_gols } = req.body;
-  try {
-    const query = `
-      INSERT INTO tabela (campeonato_id, time_id, pontos, jogos, vitorias, empates, derrotas, gols_pro, gols_contra, saldo_gols)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-      ON CONFLICT (campeonato_id, time_id) 
-      DO UPDATE SET
-        pontos = $3, jogos = $4, vitorias = $5, empates = $6, derrotas = $7, gols_pro = $8, gols_contra = $9, saldo_gols = $10
-      RETURNING *;
-    `;
-    const values = [campeonato_id, time_id, pontos, jogos, vitorias, empates, derrotas, gols_pro, gols_contra, saldo_gols];
-    const result = await pool.query(query, values);
-    res.status(201).json(result.rows[0]);
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
-// --- Artilharia ---
-app.post('/api/admin/artilharia', async (req, res) => {
-  const { campeonato_id, time_id, nome_jogadora, gols } = req.body;
-  try {
-    const result = await pool.query(
-      'INSERT INTO artilharia (campeonato_id, time_id, nome_jogadora, gols) VALUES ($1, $2, $3, $4) RETURNING *',
-      [campeonato_id, time_id, nome_jogadora, gols]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
-// NOVA ROTA PARA ADICIONAR VÁRIOS TIMES DE UMA VEZ
 app.post('/api/admin/times/bulk', async (req, res) => {
-  const times = req.body; // Espera um array de times
+  const times = req.body;
 
   if (!Array.isArray(times) || times.length === 0) {
     return res.status(400).json({ error: 'O corpo da requisição deve ser um array de times.' });
@@ -1001,7 +907,7 @@ app.post('/api/admin/times/bulk', async (req, res) => {
 
   const client = await pool.connect();
   try {
-    await client.query('BEGIN'); // Inicia a transação
+    await client.query('BEGIN');
 
     let timesAdicionados = 0;
 
@@ -1011,19 +917,18 @@ app.post('/api/admin/times/bulk', async (req, res) => {
         console.warn('Ignorando time com dados incompletos:', time);
         continue;
       }
-      
-      // ON CONFLICT(id) DO NOTHING: Se o time já existir, ele não faz nada e não dá erro.
+
       const result = await client.query(
         'INSERT INTO times (id, nome, logo_url) VALUES ($1, $2, $3) ON CONFLICT(id) DO NOTHING',
         [id, nome, logo_url]
       );
-      timesAdicionados += result.rowCount; // rowCount será 1 se inseriu, 0 se deu conflito
+      timesAdicionados += result.rowCount;
     }
 
-    await client.query('COMMIT'); // Confirma a transação
+    await client.query('COMMIT'); 
     res.status(201).json({ success: `${timesAdicionados} de ${times.length} times foram adicionados com sucesso.` });
   } catch (error) {
-    await client.query('ROLLBACK'); // Desfaz tudo em caso de erro
+    await client.query('ROLLBACK');
     console.error("Erro no cadastro em massa de times:", error);
     res.status(500).json({ error: 'Erro interno do servidor ao cadastrar times.' });
   } finally {
@@ -1031,8 +936,10 @@ app.post('/api/admin/times/bulk', async (req, res) => {
   }
 });
 
+// Adicionar partidas
+
 app.post('/api/admin/partidas/bulk', async (req, res) => {
-  const partidas = req.body; // Espera um array de partidas
+  const partidas = req.body;
 
   if (!Array.isArray(partidas) || partidas.length === 0) {
     return res.status(400).json({ error: 'O corpo da requisição deve ser um array de partidas.' });
@@ -1040,7 +947,7 @@ app.post('/api/admin/partidas/bulk', async (req, res) => {
 
   const client = await pool.connect();
   try {
-    await client.query('BEGIN'); // Inicia a transação
+    await client.query('BEGIN');
 
     for (const partida of partidas) {
       const { 
@@ -1052,8 +959,7 @@ app.post('/api/admin/partidas/bulk', async (req, res) => {
         gols_casa, 
         gols_fora 
       } = partida;
-      
-      // Validação simples
+
       if (!campeonato_id || !time_casa_id || !time_fora_id || !data || !status) {
         throw new Error(`Partida com dados incompletos: ${JSON.stringify(partida)}`);
       }
@@ -1066,10 +972,10 @@ app.post('/api/admin/partidas/bulk', async (req, res) => {
       );
     }
 
-    await client.query('COMMIT'); // Confirma a transação
+    await client.query('COMMIT');
     res.status(201).json({ success: `${partidas.length} partidas foram adicionadas com sucesso.` });
   } catch (error) {
-    await client.query('ROLLBACK'); // Desfaz tudo em caso de erro
+    await client.query('ROLLBACK');
     console.error("Erro no cadastro em massa de partidas:", error);
     res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
   } finally {
@@ -1077,9 +983,10 @@ app.post('/api/admin/partidas/bulk', async (req, res) => {
   }
 });
 
+// Adicionar tabela do campeonato
 
 app.post('/api/admin/tabela/bulk', async (req, res) => {
-  const tabelaEntries = req.body; // Espera um array de entradas da tabela
+  const tabelaEntries = req.body;
 
   if (!Array.isArray(tabelaEntries) || tabelaEntries.length === 0) {
     return res.status(400).json({ error: 'O corpo da requisição deve ser um array de entradas da tabela.' });
@@ -1087,7 +994,7 @@ app.post('/api/admin/tabela/bulk', async (req, res) => {
 
   const client = await pool.connect();
   try {
-    await client.query('BEGIN'); // Inicia a transação
+    await client.query('BEGIN');
 
     for (const entry of tabelaEntries) {
       const { 
@@ -1095,7 +1002,6 @@ app.post('/api/admin/tabela/bulk', async (req, res) => {
         gols_pro, gols_contra, saldo_gols 
       } = entry;
 
-      // Validação
       if (campeonato_id === undefined || time_id === undefined) {
         throw new Error(`Entrada da tabela com dados incompletos: ${JSON.stringify(entry)}`);
       }
@@ -1117,10 +1023,10 @@ app.post('/api/admin/tabela/bulk', async (req, res) => {
       await client.query(query, values);
     }
 
-    await client.query('COMMIT'); // Confirma a transação
+    await client.query('COMMIT');
     res.status(201).json({ success: `${tabelaEntries.length} entradas da tabela foram processadas com sucesso.` });
   } catch (error) {
-    await client.query('ROLLBACK'); // Desfaz tudo em caso de erro
+    await client.query('ROLLBACK');
     console.error("Erro no cadastro em massa da tabela:", error);
     res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
   } finally {
@@ -1128,9 +1034,10 @@ app.post('/api/admin/tabela/bulk', async (req, res) => {
   }
 });
 
+// Adicionar artilharia do campeonato
 
 app.post('/api/admin/artilharia/bulk', async (req, res) => {
-  const artilhariaEntries = req.body; // Espera um array de entradas
+  const artilhariaEntries = req.body;
 
   if (!Array.isArray(artilhariaEntries) || artilhariaEntries.length === 0) {
     return res.status(400).json({ error: 'O corpo da requisição deve ser um array de artilheiras.' });
@@ -1138,20 +1045,18 @@ app.post('/api/admin/artilharia/bulk', async (req, res) => {
 
   const client = await pool.connect();
   try {
-    await client.query('BEGIN'); // Inicia a transação
+    await client.query('BEGIN');
 
     if (artilhariaEntries.length > 0) {
       const campeonatoId = artilhariaEntries[0].campeonato_id;
       await client.query('DELETE FROM artilharia WHERE campeonato_id = $1', [campeonatoId]);
     }
 
-    // Insere os novos dados
     for (const entry of artilhariaEntries) {
       const { 
         campeonato_id, time_id, nome_jogadora, gols 
       } = entry;
 
-      // Validação
       if (campeonato_id === undefined || time_id === undefined || !nome_jogadora || gols === undefined) {
         throw new Error(`Entrada de artilharia com dados incompletos: ${JSON.stringify(entry)}`);
       }
@@ -1165,10 +1070,10 @@ app.post('/api/admin/artilharia/bulk', async (req, res) => {
       await client.query(query, values);
     }
 
-    await client.query('COMMIT'); // Confirma a transação
+    await client.query('COMMIT')
     res.status(201).json({ success: `${artilhariaEntries.length} entradas de artilharia foram processadas com sucesso.` });
   } catch (error) {
-    await client.query('ROLLBACK'); // Desfaz tudo em caso de erro
+    await client.query('ROLLBACK');
     console.error("Erro no cadastro em massa da artilharia:", error);
     res.status(500).json({ error: error.message || 'Erro interno do servidor.' });
   } finally {
@@ -1177,6 +1082,7 @@ app.post('/api/admin/artilharia/bulk', async (req, res) => {
 });
 
 // INICIA O SERVIDOR
+
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
